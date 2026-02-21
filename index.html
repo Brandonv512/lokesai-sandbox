@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=64">
-  <link rel="stylesheet" href="workflow-editor.css?v=64">
+  <link rel="stylesheet" href="styles.css?v=65">
+  <link rel="stylesheet" href="workflow-editor.css?v=65">
 </head>
 
 <body>
@@ -42,7 +42,7 @@
             </linearGradient>
             <filter id="logoGlow">
               <feGaussianBlur stdDeviation="3" result="blur" />
-              <feFlood flood-color="#1a6b1c" flood-opacity="0.15" result="green" />
+              <feFlood flood-color="#6a8a6e" flood-opacity="0.12" result="green" />
               <feComposite in="green" in2="blur" operator="in" result="greenGlow" />
               <feMerge><feMergeNode in="greenGlow" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
@@ -1867,12 +1867,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatted@3/min.js"></script>
-  <script src="workflow-editor.js?v=64"></script>
+  <script src="workflow-editor.js?v=65"></script>
   <script>
   // Auto-login for sandbox bypass mode
   (async()=>{if(!localStorage.getItem('saas_token')){try{const r=await fetch('/auth/bypass');if(r.ok){const d=await r.json();localStorage.setItem('saas_token',d.token);localStorage.setItem('saas_user',JSON.stringify(d.user));}}catch(e){}}})();
   </script>
-  <script src="app.js?v=64"></script>
+  <script src="app.js?v=65"></script>
 </body>
 
 </html>
