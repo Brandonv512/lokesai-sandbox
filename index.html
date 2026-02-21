@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=50">
-  <link rel="stylesheet" href="workflow-editor.css?v=1">
+  <link rel="stylesheet" href="workflow-editor.css?v=50">
 </head>
 
 <body>
@@ -1773,12 +1773,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flatted@3/min.js"></script>
-  <script src="workflow-editor.js?v=1"></script>
+  <script src="workflow-editor.js?v=50"></script>
   <script>
   // Auto-login for sandbox bypass mode
   (async()=>{if(!localStorage.getItem('saas_token')){try{const r=await fetch('/auth/bypass');if(r.ok){const d=await r.json();localStorage.setItem('saas_token',d.token);localStorage.setItem('saas_user',JSON.stringify(d.user));}}catch(e){}}})();
   </script>
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=50"></script>
 </body>
 
 </html>
