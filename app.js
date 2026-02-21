@@ -261,20 +261,20 @@ function initCinematicBackground() {
         return x - Math.floor(x);
     }
 
-    // Freepik-style constellation particles — dual color (gold + cyan), varied sizes
-    const PARTICLE_COUNT = 120;
-    const CONNECTION_DIST = 150; // Wider than before for denser constellations
-    const MOUSE_RADIUS = 200;   // Larger mouse interaction zone
+    // Freepik-style constellation particles — BRIGHT, dual color (gold + cyan), varied sizes
+    const PARTICLE_COUNT = 160;
+    const CONNECTION_DIST = 180; // Wide for dense constellations
+    const MOUSE_RADIUS = 250;   // Large mouse interaction zone
 
     particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-        const isCyan = i % 5 === 0; // 20% cyan particles
+        const isCyan = i % 4 === 0; // 25% cyan particles
         return {
             x: Math.random() * 2000,
             y: Math.random() * 2000,
             z: Math.random() * 3,
-            baseSize: isCyan ? (1 + Math.random() * 2) : (0.6 + Math.random() * 1.8),
+            baseSize: isCyan ? (1.5 + Math.random() * 2.5) : (1 + Math.random() * 2.2),
             speed: 0.08 + Math.random() * 0.2,
-            baseOpacity: isCyan ? (0.4 + Math.random() * 0.4) : (0.2 + Math.random() * 0.35),
+            baseOpacity: isCyan ? (0.6 + Math.random() * 0.4) : (0.4 + Math.random() * 0.4),
             angle: Math.random() * Math.PI * 2,
             angleSpeed: (Math.random() - 0.5) * 0.002,
             isCyan,
@@ -283,13 +283,13 @@ function initCinematicBackground() {
         };
     });
 
-    // Cinematic orbs (ambient glow blobs)
+    // Cinematic orbs (ambient glow blobs) — VISIBLE
     const orbColors = [
-        'rgba(198, 166, 100, 0.04)',
-        'rgba(229, 201, 141, 0.03)',
-        'rgba(0, 229, 160, 0.04)',     // cyan orb (Freepik-inspired)
-        'rgba(198, 166, 100, 0.025)',
-        'rgba(0, 212, 255, 0.03)',     // neon blue orb
+        'rgba(198, 166, 100, 0.08)',
+        'rgba(229, 201, 141, 0.06)',
+        'rgba(0, 229, 160, 0.08)',     // cyan orb (Freepik-inspired)
+        'rgba(198, 166, 100, 0.05)',
+        'rgba(0, 212, 255, 0.06)',     // neon blue orb
     ];
 
     orbs = Array.from({ length: 5 }, (_, i) => ({
@@ -354,13 +354,13 @@ function initCinematicBackground() {
             const opacityMod = p.baseOpacity * (0.3 + p.z * 0.3) * (0.8 + pulse * 0.2);
 
             // Draw glow halo for brighter particles
-            if (p.z > 1.5 || p.isCyan) {
-                const glowSize = sz * 4;
+            if (p.z > 1 || p.isCyan) {
+                const glowSize = sz * 5;
                 const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
                 if (p.isCyan) {
-                    grad.addColorStop(0, `rgba(0, 229, 160, ${opacityMod * 0.3})`);
+                    grad.addColorStop(0, `rgba(0, 229, 160, ${opacityMod * 0.5})`);
                 } else {
-                    grad.addColorStop(0, `rgba(198, 166, 100, ${opacityMod * 0.2})`);
+                    grad.addColorStop(0, `rgba(198, 166, 100, ${opacityMod * 0.4})`);
                 }
                 grad.addColorStop(1, 'transparent');
                 ctx.fillStyle = grad;
@@ -379,20 +379,20 @@ function initCinematicBackground() {
         });
 
         // Draw constellation connection lines (Freepik's key visual)
-        ctx.lineWidth = 0.6;
+        ctx.lineWidth = 0.8;
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 const dx = particles[i].x - particles[j].x;
                 const dy = particles[i].y - particles[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < CONNECTION_DIST) {
-                    const alpha = 0.08 * (1 - dist / CONNECTION_DIST);
+                    const alpha = 0.18 * (1 - dist / CONNECTION_DIST);
 
                     // Lines near mouse are brighter
                     const midX = (particles[i].x + particles[j].x) / 2;
                     const midY = (particles[i].y + particles[j].y) / 2;
                     const mouseDist = Math.sqrt((midX - mouseX) ** 2 + (midY - mouseY) ** 2);
-                    const mouseBoost = mouseDist < MOUSE_RADIUS ? (1 + (MOUSE_RADIUS - mouseDist) / MOUSE_RADIUS * 3) : 1;
+                    const mouseBoost = mouseDist < MOUSE_RADIUS ? (1 + (MOUSE_RADIUS - mouseDist) / MOUSE_RADIUS * 4) : 1;
 
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
@@ -415,13 +415,13 @@ function initCinematicBackground() {
                 const dx = p.x - mouseX;
                 const dy = p.y - mouseY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < MOUSE_RADIUS * 0.6) {
-                    const alpha = 0.12 * (1 - dist / (MOUSE_RADIUS * 0.6));
+                if (dist < MOUSE_RADIUS * 0.7) {
+                    const alpha = 0.25 * (1 - dist / (MOUSE_RADIUS * 0.7));
                     ctx.beginPath();
                     ctx.moveTo(mouseX, mouseY);
                     ctx.lineTo(p.x, p.y);
                     ctx.strokeStyle = `rgba(0, 229, 160, ${alpha})`;
-                    ctx.lineWidth = 0.4;
+                    ctx.lineWidth = 0.6;
                     ctx.stroke();
                 }
             });

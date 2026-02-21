@@ -9,16 +9,16 @@
 .workflow-editor *, .workflow-editor *::before, .workflow-editor *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .workflow-editor {
-    --bg-canvas: #080806;
-    --bg-panel: #100e0a;
-    --bg-node: rgba(16, 14, 10, 0.9);
-    --bg-node-solid: #14120c;
-    --bg-input: #1a170e;
-    --bg-hover: #252014;
-    --bg-active: #2e2818;
-    --border: rgba(198, 166, 100, 0.08);
-    --border-light: rgba(198, 166, 100, 0.15);
-    --border-bright: rgba(198, 166, 100, 0.25);
+    --bg-canvas: #060604;
+    --bg-panel: #120f0a;
+    --bg-node: rgba(18, 16, 10, 0.92);
+    --bg-node-solid: #161310;
+    --bg-input: #1c190f;
+    --bg-hover: #282316;
+    --bg-active: #30291a;
+    --border: rgba(198, 166, 100, 0.15);
+    --border-light: rgba(198, 166, 100, 0.22);
+    --border-bright: rgba(198, 166, 100, 0.35);
     --text: #c8c0b0;
     --text-dim: #6e6858;
     --text-bright: #f0e8d8;
@@ -73,8 +73,9 @@
     gap: 6px;
     padding: 0 16px;
     background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-light);
     z-index: 100;
+    backdrop-filter: blur(12px);
 }
 
 .workflow-editor .logo {
