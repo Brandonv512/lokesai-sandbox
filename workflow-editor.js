@@ -1514,6 +1514,17 @@ const AGENT_TOOLS = [
     }
 ];
 
+// Convert AGENT_TOOLS (Anthropic format) → Gemini functionDeclarations format
+function getGeminiTools() {
+    return [{
+        functionDeclarations: AGENT_TOOLS.map(tool => ({
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.input_schema
+        }))
+    }];
+}
+
 // -- System Prompt Builder --
 function buildSystemPrompt() {
     const nodeTypeInfo = Object.entries(NODE_TYPES).map(([type, def]) => {
@@ -1799,24 +1810,20 @@ async function saveAgentMemory() {
 }
 
 function sanitizeMessages(messages) {
-    // Ensure no orphaned tool_result blocks exist without a preceding tool_use
+    // Ensure no orphaned functionResponse parts exist without a preceding functionCall
     const clean = [];
     for (let i = 0; i < messages.length; i++) {
         const msg = messages[i];
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-            // This is a tool_result message — check the previous assistant message has matching tool_use blocks
-            const prevAssistant = clean.length > 0 ? clean[clean.length - 1] : null;
-            if (!prevAssistant || prevAssistant.role !== 'assistant' || !Array.isArray(prevAssistant.content)) {
-                // Orphaned tool_result — skip it
-                continue;
+        if (msg.role === 'user' && Array.isArray(msg.parts) && msg.parts.some(p => p.functionResponse)) {
+            // This is a function result message — check the previous model message has matching functionCall
+            const prevModel = clean.length > 0 ? clean[clean.length - 1] : null;
+            if (!prevModel || prevModel.role !== 'model' || !Array.isArray(prevModel.parts)) {
+                continue; // Orphaned functionResponse — skip
             }
-            const toolUseIds = new Set();
-            for (const block of prevAssistant.content) {
-                if (block.type === 'tool_use') toolUseIds.add(block.id);
-            }
-            const validResults = msg.content.filter(r => r.type === 'tool_result' && toolUseIds.has(r.tool_use_id));
-            if (validResults.length > 0) {
-                clean.push({ role: 'user', content: validResults });
+            const calledNames = new Set(prevModel.parts.filter(p => p.functionCall).map(p => p.functionCall.name));
+            const validParts = msg.parts.filter(p => p.functionResponse && calledNames.has(p.functionResponse.name));
+            if (validParts.length > 0) {
+                clean.push({ role: 'user', parts: validParts });
             }
         } else {
             clean.push(msg);
@@ -1827,20 +1834,20 @@ function sanitizeMessages(messages) {
 
 function trimConversation(messages, maxMessages = 30) {
     if (messages.length <= maxMessages) return messages;
-    // Find a safe trim point — don't break in the middle of a tool_use/tool_result pair
+    // Find a safe trim point — don't break in the middle of a functionCall/functionResponse pair
     let trimStart = messages.length - maxMessages;
     while (trimStart < messages.length) {
         const msg = messages[trimStart];
-        // Don't start on a tool_result message or an assistant message with tool_use
-        if (msg.role === 'user' && Array.isArray(msg.content)) { trimStart++; continue; }
-        if (msg.role === 'assistant' && Array.isArray(msg.content) && msg.content.some(b => b.type === 'tool_use')) { trimStart++; continue; }
+        // Don't start on a functionResponse message or a model message with functionCall
+        if (msg.role === 'user' && Array.isArray(msg.parts) && msg.parts.some(p => p.functionResponse)) { trimStart++; continue; }
+        if (msg.role === 'model' && Array.isArray(msg.parts) && msg.parts.some(p => p.functionCall)) { trimStart++; continue; }
         break;
     }
     return messages.slice(trimStart);
 }
 
 function saveConversationToLocal() {
-    // Intentionally not saving to avoid stale tool_use/tool_result corruption across sessions
+    // Intentionally not saving to avoid stale functionCall/functionResponse corruption across sessions
 }
 
 // -- Conversation Loop --
@@ -1868,7 +1875,7 @@ async function sendChatMessage() {
     sendBtn.classList.add('stop-mode');
 
     appendChatMessage('user', text);
-    agent.messages.push({ role: 'user', content: text });
+    agent.messages.push({ role: 'user', parts: [{ text }] });
 
     showThinking();
 
@@ -1884,25 +1891,24 @@ async function sendChatMessage() {
             }
             const cleanMessages = sanitizeMessages(trimConversation(agent.messages));
             const systemPrompt = buildSystemPrompt();
-            const models = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001'];
+            const models = ['gemini-2.5-pro', 'gemini-2.0-flash'];
 
             // Retry loop with model fallback for overloaded API
             let resp, data;
             for (let attempt = 0; attempt < 5; attempt++) {
                 const model = attempt < 3 ? models[0] : models[1];
                 const reqBody = JSON.stringify({
-                    model,
-                    max_tokens: 4096,
-                    system: systemPrompt,
-                    messages: cleanMessages,
-                    tools: AGENT_TOOLS,
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: cleanMessages,
+                    tools: getGeminiTools(),
+                    generationConfig: { maxOutputTokens: 8192 },
                 });
-                resp = await wfFetch('/api/workflow-editor/chat', {
+                resp = await wfFetch(`/api/workflow-editor/chat?model=${model}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: reqBody,
                 });
-                if (resp.status === 529 || resp.status === 429) {
+                if (resp.status === 503 || resp.status === 429) {
                     const wait = (attempt + 1) * 3;
                     const fallbackNote = attempt === 2 ? ' (switching to faster model)' : '';
                     hideThinking();
@@ -1931,42 +1937,56 @@ async function sendChatMessage() {
             data = await resp.json();
             hideThinking();
 
-            // Collect text and tool_use blocks
-            const textBlocks = [];
-            const toolUseBlocks = [];
+            const candidate = data.candidates?.[0];
+            if (!candidate) {
+                throw new Error('No response from Gemini API');
+            }
 
-            for (const block of (data.content || [])) {
-                if (block.type === 'text' && block.text) textBlocks.push(block.text);
-                if (block.type === 'tool_use') toolUseBlocks.push(block);
+            // Handle safety filter blocks
+            if (candidate.finishReason === 'SAFETY' || candidate.finishReason === 'RECITATION') {
+                appendChatMessage('assistant', `Response blocked by safety filter (${candidate.finishReason}). Try rephrasing your request.`);
+                break;
+            }
+
+            const parts = candidate.content?.parts || [];
+
+            // Collect text and functionCall parts
+            const textParts = [];
+            const functionCalls = [];
+
+            for (const part of parts) {
+                if (part.text) textParts.push(part.text);
+                if (part.functionCall) functionCalls.push(part.functionCall);
             }
 
             // Show text response
-            if (textBlocks.length > 0) {
-                const fullText = textBlocks.join('\n');
+            if (textParts.length > 0) {
+                const fullText = textParts.join('\n');
                 appendChatMessage('assistant', fullText);
             }
 
-            // Append assistant message to conversation
-            agent.messages.push({ role: 'assistant', content: data.content });
+            // Append model message to conversation
+            agent.messages.push({ role: 'model', parts });
 
-            if (data.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
+            if (candidate.finishReason === 'STOP' || functionCalls.length === 0) {
                 break;
             }
 
             // Process tool calls
             showThinking();
-            const toolResults = [];
-            for (const toolBlock of toolUseBlocks) {
-                const result = await executeAgentTool(toolBlock.name, toolBlock.input);
-                appendActionCard(toolBlock.name, toolBlock.input, result);
-                toolResults.push({
-                    type: 'tool_result',
-                    tool_use_id: toolBlock.id,
-                    content: JSON.stringify(result)
+            const toolResultParts = [];
+            for (const fc of functionCalls) {
+                const result = await executeAgentTool(fc.name, fc.args);
+                appendActionCard(fc.name, fc.args, result);
+                toolResultParts.push({
+                    functionResponse: {
+                        name: fc.name,
+                        response: result
+                    }
                 });
             }
 
-            agent.messages.push({ role: 'user', content: toolResults });
+            agent.messages.push({ role: 'user', parts: toolResultParts });
         }
 
     } catch (err) {

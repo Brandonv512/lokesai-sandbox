@@ -3540,14 +3540,17 @@ async function handleWorkflowReupload(req, res) {
 async function handleWorkflowChatProxy(req, res) {
     const userId = requireAuth(req, res);
     if (!userId) return;
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) { jsonResponse(res, 500, { error: 'ANTHROPIC_API_KEY not configured' }); return; }
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) { jsonResponse(res, 500, { error: 'GEMINI_API_KEY not configured' }); return; }
     try {
         const rawBody = await getRequestBody(req);
-        console.log(`[we-chat] Proxying to Claude API (${(rawBody.length / 1024).toFixed(1)} KB)`);
-        const resp = await weHttpsRequest('https://api.anthropic.com/v1/messages', {
+        const parsedUrl = new URL(req.url, 'http://localhost');
+        const model = parsedUrl.searchParams.get('model') || 'gemini-2.5-pro';
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        console.log(`[we-chat] Proxying to Gemini API model=${model} (${(rawBody.length / 1024).toFixed(1)} KB)`);
+        const resp = await weHttpsRequest(geminiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+            headers: { 'Content-Type': 'application/json' },
             body: rawBody, timeout: 180000,
         });
         const respBody = resp.raw || JSON.stringify(resp.data) || '';
