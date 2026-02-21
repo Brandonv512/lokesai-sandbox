@@ -250,35 +250,46 @@ function initCinematicBackground() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Track mouse for particle interaction
+    // Track mouse for constellation interaction
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
     });
 
-    // Particle starfield (3 depth layers)
     function seededRandom(seed) {
         const x = Math.sin(seed) * 10000;
         return x - Math.floor(x);
     }
 
-    particles = Array.from({ length: 180 }, (_, i) => ({
-        x: Math.random() * 2000,
-        y: Math.random() * 2000,
-        z: Math.random() * 3, // depth layer: 0=far, 2=close
-        size: 0.5 + Math.random() * 1.5,
-        speed: 0.1 + Math.random() * 0.3,
-        opacity: 0.15 + Math.random() * 0.35,
-        angle: Math.random() * Math.PI * 2,
-    }));
+    // Freepik-style constellation particles — dual color (gold + cyan), varied sizes
+    const PARTICLE_COUNT = 120;
+    const CONNECTION_DIST = 150; // Wider than before for denser constellations
+    const MOUSE_RADIUS = 200;   // Larger mouse interaction zone
 
-    // Cinematic orbs (ported from CinematicOrbs.tsx)
+    particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+        const isCyan = i % 5 === 0; // 20% cyan particles
+        return {
+            x: Math.random() * 2000,
+            y: Math.random() * 2000,
+            z: Math.random() * 3,
+            baseSize: isCyan ? (1 + Math.random() * 2) : (0.6 + Math.random() * 1.8),
+            speed: 0.08 + Math.random() * 0.2,
+            baseOpacity: isCyan ? (0.4 + Math.random() * 0.4) : (0.2 + Math.random() * 0.35),
+            angle: Math.random() * Math.PI * 2,
+            angleSpeed: (Math.random() - 0.5) * 0.002,
+            isCyan,
+            pulsePhase: Math.random() * Math.PI * 2,
+            pulseSpeed: 0.5 + Math.random() * 1.5,
+        };
+    });
+
+    // Cinematic orbs (ambient glow blobs)
     const orbColors = [
-        'rgba(198, 166, 100, 0.04)',   // gold
-        'rgba(229, 201, 141, 0.03)',   // light gold
-        'rgba(2, 75, 85, 0.05)',       // teal
-        'rgba(198, 166, 100, 0.025)',  // gold dim
-        'rgba(99, 102, 241, 0.03)',    // indigo
+        'rgba(198, 166, 100, 0.04)',
+        'rgba(229, 201, 141, 0.03)',
+        'rgba(0, 229, 160, 0.04)',     // cyan orb (Freepik-inspired)
+        'rgba(198, 166, 100, 0.025)',
+        'rgba(0, 212, 255, 0.03)',     // neon blue orb
     ];
 
     orbs = Array.from({ length: 5 }, (_, i) => ({
@@ -292,7 +303,7 @@ function initCinematicBackground() {
 
     let lastTime = 0;
     function animate(timestamp) {
-        const dt = (timestamp - lastTime) / 1000;
+        const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
         lastTime = timestamp;
         const time = timestamp / 1000;
 
@@ -314,9 +325,10 @@ function initCinematicBackground() {
             ctx.fillRect(ox - os, oy - os, os * 2, os * 2);
         });
 
-        // Draw particles
+        // Update + draw constellation particles
         particles.forEach(p => {
             const parallax = 0.3 + p.z * 0.35;
+            p.angle += p.angleSpeed;
             p.x += Math.cos(p.angle) * p.speed * parallax;
             p.y += Math.sin(p.angle) * p.speed * parallax;
 
@@ -326,38 +338,93 @@ function initCinematicBackground() {
             if (p.y < -10) p.y = h + 10;
             if (p.y > h + 10) p.y = -10;
 
-            // Mouse repulsion
-            const dx = p.x - mouseX;
-            const dy = p.y - mouseY;
+            // Mouse attraction (gentle pull toward cursor — Freepik effect)
+            const dx = mouseX - p.x;
+            const dy = mouseY - p.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 120) {
-                const force = (120 - dist) / 120 * 2;
+            if (dist < MOUSE_RADIUS && dist > 10) {
+                const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 0.3;
                 p.x += (dx / dist) * force;
                 p.y += (dy / dist) * force;
             }
 
-            const sz = p.size * (0.5 + p.z * 0.3);
+            // Pulse animation
+            const pulse = Math.sin(time * p.pulseSpeed + p.pulsePhase);
+            const sz = p.baseSize * (0.5 + p.z * 0.3) * (0.85 + pulse * 0.15);
+            const opacityMod = p.baseOpacity * (0.3 + p.z * 0.3) * (0.8 + pulse * 0.2);
+
+            // Draw glow halo for brighter particles
+            if (p.z > 1.5 || p.isCyan) {
+                const glowSize = sz * 4;
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
+                if (p.isCyan) {
+                    grad.addColorStop(0, `rgba(0, 229, 160, ${opacityMod * 0.3})`);
+                } else {
+                    grad.addColorStop(0, `rgba(198, 166, 100, ${opacityMod * 0.2})`);
+                }
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(p.x - glowSize, p.y - glowSize, glowSize * 2, glowSize * 2);
+            }
+
+            // Draw dot
             ctx.beginPath();
             ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(198, 166, 100, ${p.opacity * (0.3 + p.z * 0.3)})`;
+            if (p.isCyan) {
+                ctx.fillStyle = `rgba(0, 229, 160, ${opacityMod})`;
+            } else {
+                ctx.fillStyle = `rgba(198, 166, 100, ${opacityMod})`;
+            }
             ctx.fill();
         });
 
-        // Draw connection lines between nearby particles
+        // Draw constellation connection lines (Freepik's key visual)
+        ctx.lineWidth = 0.6;
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 const dx = particles[i].x - particles[j].x;
                 const dy = particles[i].y - particles[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 100) {
+                if (dist < CONNECTION_DIST) {
+                    const alpha = 0.08 * (1 - dist / CONNECTION_DIST);
+
+                    // Lines near mouse are brighter
+                    const midX = (particles[i].x + particles[j].x) / 2;
+                    const midY = (particles[i].y + particles[j].y) / 2;
+                    const mouseDist = Math.sqrt((midX - mouseX) ** 2 + (midY - mouseY) ** 2);
+                    const mouseBoost = mouseDist < MOUSE_RADIUS ? (1 + (MOUSE_RADIUS - mouseDist) / MOUSE_RADIUS * 3) : 1;
+
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.strokeStyle = `rgba(198, 166, 100, ${0.03 * (1 - dist / 100)})`;
-                    ctx.lineWidth = 0.5;
+
+                    // Cyan tint for lines connecting cyan particles
+                    if (particles[i].isCyan || particles[j].isCyan) {
+                        ctx.strokeStyle = `rgba(0, 229, 160, ${alpha * mouseBoost})`;
+                    } else {
+                        ctx.strokeStyle = `rgba(198, 166, 100, ${alpha * mouseBoost})`;
+                    }
                     ctx.stroke();
                 }
             }
+        }
+
+        // Draw mouse-proximity connection highlights (cursor acts as a node)
+        if (mouseX > 0 && mouseY > 0) {
+            particles.forEach(p => {
+                const dx = p.x - mouseX;
+                const dy = p.y - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < MOUSE_RADIUS * 0.6) {
+                    const alpha = 0.12 * (1 - dist / (MOUSE_RADIUS * 0.6));
+                    ctx.beginPath();
+                    ctx.moveTo(mouseX, mouseY);
+                    ctx.lineTo(p.x, p.y);
+                    ctx.strokeStyle = `rgba(0, 229, 160, ${alpha})`;
+                    ctx.lineWidth = 0.4;
+                    ctx.stroke();
+                }
+            });
         }
 
         requestAnimationFrame(animate);
@@ -573,6 +640,15 @@ function initFullDashboard() {
 
     setTimeout(initCardTilt, 500);
 
+    // Dismiss Freepik-style loading overlay
+    setTimeout(() => {
+        const overlay = document.getElementById('appLoadingOverlay');
+        if (overlay) {
+            overlay.classList.add('fade-out');
+            setTimeout(() => overlay.remove(), 700);
+        }
+    }, 800);
+
     setInterval(() => {
         loadPipelineStatus();
         loadExecutions();
@@ -638,7 +714,7 @@ async function testAgentPrompt() {
 
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner-sm"></div> Generating...';
-    box.innerHTML = '<div class="agent-output-loading"><div class="spinner"></div><span>Claude is generating content...</span></div>';
+    box.innerHTML = '<div class="freepik-loader"><div class="freepik-spinner"><div class="freepik-spinner-dot"></div></div><span class="freepik-loader-text">Claude is generating content...</span><span class="freepik-loader-subtext">Crafting your creative brief</span></div>';
 
     try {
         // Use the server to proxy a test to Claude
@@ -1931,9 +2007,12 @@ function completePipeline(status, errorMsg) {
     if (pipelineState.contentTimerInterval) clearInterval(pipelineState.contentTimerInterval);
     pipelineState.contentTimerInterval = null;
 
-    // Deactivate glow ring on pipeline completion
+    // Deactivate glow ring + traveling glow on pipeline completion
     const glowEl = document.getElementById('ccPromptGlowWrapper');
     if (glowEl) { glowEl.classList.remove('generating'); glowEl.dataset.generating = 'false'; }
+    const previewGlow = document.getElementById('ccMainPreview');
+    if (previewGlow) previewGlow.classList.remove('generating');
+    document.querySelectorAll('.cc-char-thumb.generating-active').forEach(el => el.classList.remove('generating-active'));
 
     const tracker = $('#pipelineTracker');
     if (tracker) tracker.classList.remove('active');
@@ -2937,15 +3016,18 @@ function updateMainPreview() {
     const bioPersonality = document.getElementById('ccBioPersonality');
     const bioLocation = document.getElementById('ccBioLocation');
 
+    const previewFrame = document.getElementById('ccMainPreview');
     if (card) {
         const thumbUrl = card.thumbnail_url || card.character_data?.referenceImageUrl;
         if (thumbUrl) {
             previewImg.src = thumbUrl;
             previewImg.style.display = 'block';
             placeholder.style.display = 'none';
+            if (previewFrame) previewFrame.classList.add('has-image');
         } else {
             previewImg.style.display = 'none';
             placeholder.style.display = 'flex';
+            if (previewFrame) previewFrame.classList.remove('has-image');
         }
         if (nameEl) nameEl.textContent = card.name || '';
 
@@ -2969,6 +3051,7 @@ function updateMainPreview() {
         placeholder.style.display = 'flex';
         if (nameEl) nameEl.textContent = '';
         if (bioEl) bioEl.style.display = 'none';
+        if (previewFrame) previewFrame.classList.remove('has-image');
         const themeRow = document.getElementById('ccAgentThemeRow');
         if (themeRow) themeRow.style.display = 'none';
     }
@@ -3768,9 +3851,13 @@ async function generateFromStudio(ctx) {
     const voiceScript = document.getElementById(voiceId)?.value || '';
 
     showToast('Submitting to pipeline...', 'info');
-    // Activate Freepik-style glow ring
+    // Activate Freepik-style glow ring + traveling border glow on preview
     const glowWrapper = document.getElementById('ccPromptGlowWrapper');
     if (glowWrapper) { glowWrapper.classList.add('generating'); glowWrapper.dataset.generating = 'true'; }
+    const previewEl = document.getElementById('ccMainPreview');
+    if (previewEl) previewEl.classList.add('generating');
+    // Pulse selected character cards
+    document.querySelectorAll('.cc-char-thumb.selected').forEach(el => el.classList.add('generating-active'));
     try {
         // Upload motion reference if provided
         let motionReferenceUrl = iphoneState.motionRefUrl || null;
@@ -3841,9 +3928,12 @@ async function generateFromStudio(ctx) {
         }
     } catch (e) {
         showToast('Generation error: ' + e.message, 'error');
-        // Deactivate glow ring on error
+        // Deactivate glow ring + traveling glow on error
         const gw = document.getElementById('ccPromptGlowWrapper');
         if (gw) { gw.classList.remove('generating'); gw.dataset.generating = 'false'; }
+        const pv = document.getElementById('ccMainPreview');
+        if (pv) pv.classList.remove('generating');
+        document.querySelectorAll('.cc-char-thumb.generating-active').forEach(el => el.classList.remove('generating-active'));
     }
 }
 
@@ -4793,9 +4883,11 @@ async function generateAgentContent() {
 
     const btn = document.getElementById('ccAgentBtn');
     if (btn) { btn.disabled = true; btn.classList.add('loading'); }
-    // Activate glow ring for agent generation
+    // Activate glow ring + thinking state for agent generation
     const agentGlow = document.getElementById('ccPromptGlowWrapper');
     if (agentGlow) { agentGlow.classList.add('generating'); agentGlow.dataset.generating = 'true'; }
+    const agentCard = document.getElementById('ccAgentPreview');
+    if (agentCard) { agentCard.style.display = 'block'; agentCard.classList.add('thinking'); }
     showToast('Generating in-character content idea...', 'info');
 
     try {
@@ -4826,9 +4918,11 @@ async function generateAgentContent() {
         showToast('Content agent error: ' + e.message, 'error');
     } finally {
         if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
-        // Deactivate glow ring
+        // Deactivate glow ring + thinking state
         const agGlow = document.getElementById('ccPromptGlowWrapper');
         if (agGlow) { agGlow.classList.remove('generating'); agGlow.dataset.generating = 'false'; }
+        const agCard = document.getElementById('ccAgentPreview');
+        if (agCard) agCard.classList.remove('thinking');
     }
 }
 

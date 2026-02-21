@@ -8311,3 +8311,439 @@ textarea.input-text {
 .stat-card {
     will-change: auto;
 }
+
+/* ==================== FREEPIK-INSPIRED ENHANCEMENTS ==================== */
+
+/* ── Feature 1: Enhanced Constellation Background Canvas ── */
+/* (Canvas rendering upgraded in app.js — these are CSS overlays) */
+#bgCanvas {
+    opacity: 0.85;
+    transition: opacity 0.5s;
+}
+
+/* Subtle radial vignette to frame the constellation */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(5, 4, 4, 0.6) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Feature 2: Bright Cyan Glowing Border (Freepik-style) ── */
+
+/* Character card selected — thick cyan glow like Freepik's selected node */
+.cc-char-thumb.selected {
+    border-color: var(--accent-cyan) !important;
+    box-shadow:
+        0 0 8px rgba(0, 229, 160, 0.4),
+        0 0 20px rgba(0, 229, 160, 0.2),
+        0 0 40px rgba(0, 229, 160, 0.1),
+        inset 0 0 8px rgba(0, 229, 160, 0.05);
+    animation: cyanGlowPulse 2.5s ease-in-out infinite;
+}
+
+.character-card.selected {
+    border-color: var(--accent-cyan) !important;
+    box-shadow:
+        0 0 8px rgba(0, 229, 160, 0.4),
+        0 0 20px rgba(0, 229, 160, 0.2),
+        0 0 40px rgba(0, 229, 160, 0.1);
+    animation: cyanGlowPulse 2.5s ease-in-out infinite;
+}
+
+.cc-motion-card.selected {
+    border-color: var(--accent-cyan) !important;
+    box-shadow:
+        0 0 8px rgba(0, 229, 160, 0.4),
+        0 0 20px rgba(0, 229, 160, 0.2),
+        0 0 40px rgba(0, 229, 160, 0.1);
+}
+
+/* Preview frame gets cyan glow when image is loaded */
+.cc-preview.has-image {
+    border-color: rgba(0, 229, 160, 0.3);
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(0, 229, 160, 0.15),
+        0 0 60px rgba(0, 229, 160, 0.08);
+}
+
+.cc-preview.has-image .cc-preview-hud-corner--tl,
+.cc-preview.has-image .cc-preview-hud-corner--tr,
+.cc-preview.has-image .cc-preview-hud-corner--bl,
+.cc-preview.has-image .cc-preview-hud-corner--br {
+    border-color: var(--accent-cyan) !important;
+    opacity: 0.6;
+}
+
+/* Carousel card selected glow */
+.cc-carousel-card.selected {
+    border-color: var(--accent-cyan) !important;
+    box-shadow:
+        0 0 8px rgba(0, 229, 160, 0.4),
+        0 0 20px rgba(0, 229, 160, 0.2);
+}
+
+@keyframes cyanGlowPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 8px rgba(0, 229, 160, 0.4),
+            0 0 20px rgba(0, 229, 160, 0.2),
+            0 0 40px rgba(0, 229, 160, 0.1);
+    }
+    50% {
+        box-shadow:
+            0 0 12px rgba(0, 229, 160, 0.5),
+            0 0 28px rgba(0, 229, 160, 0.25),
+            0 0 50px rgba(0, 229, 160, 0.12);
+    }
+}
+
+/* ── Feature 3: Traveling Gradient Glow (Processing States) ── */
+
+/* Wrapper for any element that needs the traveling border glow */
+.traveling-glow {
+    position: relative;
+    overflow: visible;
+}
+
+.traveling-glow::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(
+        from var(--glow-angle, 0deg),
+        transparent 0%,
+        var(--accent-cyan) 8%,
+        var(--accent-cyan-light) 16%,
+        var(--accent-gold) 24%,
+        transparent 32%,
+        transparent 100%
+    );
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-smooth);
+    animation: travelingGlow 2.5s linear infinite;
+    pointer-events: none;
+}
+
+/* Mask inner area to show only the border ring */
+.traveling-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--depth-elevated);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.traveling-glow.active::before {
+    opacity: 1;
+}
+
+@keyframes travelingGlow {
+    to { --glow-angle: 360deg; }
+}
+
+/* Fallback for browsers without @property support: use transform rotation */
+.traveling-glow-wrap {
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-smooth);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.traveling-glow-wrap.active {
+    opacity: 1;
+}
+
+.traveling-glow-wrap .glow-spinner {
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        var(--accent-cyan) 8%,
+        var(--accent-cyan-light) 16%,
+        var(--accent-gold) 24%,
+        transparent 32%,
+        transparent 100%
+    );
+    animation: glowRingRotate 2.5s linear infinite;
+}
+
+.traveling-glow-wrap .glow-mask {
+    position: absolute;
+    inset: 2px;
+    border-radius: inherit;
+    background: var(--depth-elevated);
+}
+
+/* Pipeline dot traveling glow during running state */
+.cc-pipeline-dot.running {
+    position: relative;
+}
+
+.cc-pipeline-dot.running .cc-dot {
+    position: relative;
+    overflow: visible;
+}
+
+.cc-pipeline-dot.running .cc-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        var(--accent-cyan) 15%,
+        transparent 30%,
+        transparent 100%
+    );
+    animation: glowRingRotate 1.5s linear infinite;
+    z-index: -1;
+    filter: blur(1px);
+}
+
+/* Preview card traveling glow during generation */
+.cc-preview.generating {
+    border-color: transparent !important;
+}
+
+.cc-preview.generating::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: calc(var(--radius-lg) + 3px);
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        rgba(0, 229, 160, 0.6) 8%,
+        rgba(51, 255, 189, 0.4) 16%,
+        rgba(198, 166, 100, 0.4) 24%,
+        transparent 32%,
+        transparent 60%,
+        rgba(0, 212, 255, 0.3) 70%,
+        rgba(0, 229, 160, 0.5) 80%,
+        transparent 88%
+    );
+    z-index: -1;
+    filter: blur(2px);
+    animation: glowRingRotate 3s linear infinite;
+}
+
+/* Outer diffuse glow for generating preview */
+.cc-preview.generating ~ .cc-preview-generating-glow {
+    position: absolute;
+    inset: -12px;
+    border-radius: calc(var(--radius-lg) + 12px);
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        rgba(0, 229, 160, 0.12) 15%,
+        transparent 30%,
+        transparent 50%,
+        rgba(0, 212, 255, 0.08) 65%,
+        transparent 80%
+    );
+    filter: blur(16px);
+    animation: glowRingRotate 3s linear infinite;
+    pointer-events: none;
+    z-index: -2;
+}
+
+/* Agent preview card gets traveling glow while AI is thinking */
+.cc-agent-preview.thinking {
+    border-color: transparent;
+    overflow: visible;
+}
+
+.cc-agent-preview.thinking::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: calc(var(--radius-md) + 2px);
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        rgba(0, 229, 160, 0.5) 10%,
+        rgba(51, 255, 189, 0.3) 20%,
+        transparent 30%,
+        transparent 100%
+    );
+    z-index: -1;
+    filter: blur(1px);
+    animation: glowRingRotate 2s linear infinite;
+}
+
+/* ── Feature 4: Freepik-Style Dotted Circle Loading Spinner ── */
+
+.freepik-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px;
+}
+
+.freepik-spinner {
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+/* Dotted circle ring */
+.freepik-spinner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px dashed rgba(0, 229, 160, 0.3);
+    animation: spinRotateReverse 8s linear infinite;
+}
+
+/* Traveling arc highlight */
+.freepik-spinner::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    border-top-color: var(--accent-cyan);
+    border-right-color: rgba(0, 229, 160, 0.3);
+    filter: drop-shadow(0 0 6px rgba(0, 229, 160, 0.4));
+    animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Inner pulsing dot */
+.freepik-spinner-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 160, 0.5);
+    animation: freepikDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes freepikDotPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.4); opacity: 1; }
+}
+
+@keyframes spinRotateReverse {
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes spinRotate {
+    to { transform: rotate(360deg); }
+}
+
+.freepik-loader-text {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.freepik-loader-subtext {
+    font-size: var(--text-2xs);
+    color: var(--text-tertiary);
+    margin-top: -8px;
+}
+
+/* Full-page loading overlay (for initial app load) */
+.freepik-loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--depth-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 10000;
+    transition: opacity 0.6s var(--ease-smooth), visibility 0.6s;
+}
+
+.freepik-loading-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.freepik-loading-overlay .freepik-spinner {
+    width: 64px;
+    height: 64px;
+}
+
+.freepik-loading-overlay .freepik-spinner-dot {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+}
+
+.freepik-loading-overlay .freepik-loader-text {
+    font-size: var(--text-base);
+    font-family: var(--font-heading);
+}
+
+/* Particle constellation dots in background (Freepik "Your space is ready") */
+.constellation-dot {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Generating state enhancements ── */
+
+/* Character cards pulse cyan during generation */
+.cc-char-thumb.selected.generating-active {
+    animation: cyanGlowBreath 1.5s ease-in-out infinite;
+}
+
+@keyframes cyanGlowBreath {
+    0%, 100% {
+        box-shadow:
+            0 0 8px rgba(0, 229, 160, 0.3),
+            0 0 20px rgba(0, 229, 160, 0.15);
+        border-color: var(--accent-cyan);
+    }
+    50% {
+        box-shadow:
+            0 0 16px rgba(0, 229, 160, 0.5),
+            0 0 40px rgba(0, 229, 160, 0.25),
+            0 0 60px rgba(0, 229, 160, 0.1);
+        border-color: var(--accent-cyan-light);
+    }
+}
+
+/* Prompt bar enhanced generating state */
+.cc-prompt-glow-wrapper.generating {
+    /* The traveling glow is already handled above — enhance with extra diffuse glow */
+}
+
+.cc-prompt-glow-wrapper.generating .cc-generate-btn {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-dark));
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 229, 160, 0.3);
+    animation: genBtnPulse 2s ease-in-out infinite;
+}
+
+@keyframes genBtnPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 160, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(0, 229, 160, 0.5), 0 0 60px rgba(0, 229, 160, 0.15); }
+}
