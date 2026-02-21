@@ -963,104 +963,108 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   BRAIN NODE — Entire node is a translucent brain shape
+   BRAIN NODE — Detailed anatomical brain behind node
    ══════════════════════════════════════════════════════ */
 
-/* Brain-shaped node body */
+/* Node stays rectangular so ports work — brain is a background overlay */
 .workflow-editor .node[data-type="brain"] {
-    width: 280px;
-    border-radius: 45% 48% 42% 46% / 40% 38% 45% 42%;
-    background: rgba(210, 210, 230, 0.06);
-    background-image:
-        radial-gradient(ellipse 55% 50% at 35% 40%, rgba(210,210,230,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 55% 50% at 65% 40%, rgba(210,210,230,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 80% 60% at 50% 60%, rgba(106,138,110,0.04) 0%, transparent 60%);
+    width: 270px;
+    background: rgba(6, 8, 14, 0.35);
     backdrop-filter: blur(32px) saturate(2.0);
     -webkit-backdrop-filter: blur(32px) saturate(2.0);
+    border: none;
     box-shadow:
-        0 0 40px rgba(210,210,230,0.06),
-        0 0 80px rgba(106,138,110,0.03),
-        inset 0 0 40px rgba(210,210,230,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-    padding: 24px 20px 20px;
+        0 10px 40px rgba(0,0,0,0.45),
+        0 0 30px rgba(210,210,230,0.04),
+        inset 0 0 30px rgba(210,210,230,0.03);
     overflow: visible;
     position: relative;
     animation: brainFloat 6s ease-in-out infinite;
 }
 
-/* Organic floating motion */
 @keyframes brainFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-3px); }
 }
 
-/* Brain fissure line down center (::before) */
+/* Detailed brain SVG overlay — positioned behind content */
 .workflow-editor .node[data-type="brain"]::before {
     content: '';
     position: absolute;
-    top: 15%;
+    top: -30px;
     left: 50%;
-    width: 1px;
-    height: 70%;
-    background: linear-gradient(to bottom, transparent, rgba(210,210,230,0.12), rgba(106,138,110,0.08), transparent);
+    transform: translateX(-50%);
+    width: 300px;
+    height: 260px;
     pointer-events: none;
     z-index: 0;
+    opacity: 0.18;
+    animation: brainPulseGlow 5s ease-in-out infinite;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 180' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='200' y2='180'%3E%3Cstop offset='0%25' stop-color='%23e4e4ec'/%3E%3Cstop offset='50%25' stop-color='%23d0d0d8'/%3E%3Cstop offset='100%25' stop-color='%238aaa8e'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Left hemisphere --%3E%3Cpath d='M98 15 C75 12 55 18 42 30 C28 43 22 60 24 78 C20 82 16 90 18 102 C15 108 14 118 20 128 C24 136 32 142 42 148 C50 155 65 160 82 162 C90 163 96 162 98 160' stroke='url(%23bg)' stroke-width='1.8' fill='rgba(210,210,230,0.06)'/%3E%3C!-- Right hemisphere --%3E%3Cpath d='M102 15 C125 12 145 18 158 30 C172 43 178 60 176 78 C180 82 184 90 182 102 C185 108 186 118 180 128 C176 136 168 142 158 148 C150 155 135 160 118 162 C110 163 104 162 102 160' stroke='url(%23bg)' stroke-width='1.8' fill='rgba(210,210,230,0.06)'/%3E%3C!-- Central fissure --%3E%3Cpath d='M100 14 Q98 50 100 90 Q102 130 100 162' stroke='%23d0d0d8' stroke-width='1' opacity='0.4'/%3E%3C!-- Frontal lobe sulci (left) --%3E%3Cpath d='M42 38 C55 35 70 40 85 48 Q92 52 98 50' stroke='%23e4e4ec' stroke-width='0.8' opacity='0.3'/%3E%3Cpath d='M30 55 C45 50 65 52 80 58 Q90 62 98 60' stroke='%23d0d0d8' stroke-width='0.7' opacity='0.25'/%3E%3C!-- Frontal lobe sulci (right) --%3E%3Cpath d='M158 38 C145 35 130 40 115 48 Q108 52 102 50' stroke='%23e4e4ec' stroke-width='0.8' opacity='0.3'/%3E%3Cpath d='M170 55 C155 50 135 52 120 58 Q110 62 102 60' stroke='%23d0d0d8' stroke-width='0.7' opacity='0.25'/%3E%3C!-- Lateral sulcus (Sylvian fissure) --%3E%3Cpath d='M28 78 C40 72 55 68 70 74 Q85 80 98 78' stroke='%23d0d0d8' stroke-width='1' opacity='0.35'/%3E%3Cpath d='M172 78 C160 72 145 68 130 74 Q115 80 102 78' stroke='%23d0d0d8' stroke-width='1' opacity='0.35'/%3E%3C!-- Parietal sulci --%3E%3Cpath d='M32 98 C50 92 68 95 85 100 Q92 103 98 100' stroke='%23e4e4ec' stroke-width='0.6' opacity='0.2'/%3E%3Cpath d='M168 98 C150 92 132 95 115 100 Q108 103 102 100' stroke='%23e4e4ec' stroke-width='0.6' opacity='0.2'/%3E%3C!-- Temporal lobe detail --%3E%3Cpath d='M24 108 C35 105 50 108 70 114 Q85 118 98 115' stroke='%23d0d0d8' stroke-width='0.7' opacity='0.22'/%3E%3Cpath d='M176 108 C165 105 150 108 130 114 Q115 118 102 115' stroke='%23d0d0d8' stroke-width='0.7' opacity='0.22'/%3E%3C!-- Occipital region --%3E%3Cpath d='M38 132 C55 128 72 130 88 135 Q95 137 98 135' stroke='%23e4e4ec' stroke-width='0.6' opacity='0.18'/%3E%3Cpath d='M162 132 C145 128 128 130 112 135 Q105 137 102 135' stroke='%23e4e4ec' stroke-width='0.6' opacity='0.18'/%3E%3C!-- Cerebellum --%3E%3Cellipse cx='100' cy='158' rx='30' ry='14' stroke='%23d0d0d8' stroke-width='1.2' fill='rgba(210,210,230,0.04)' opacity='0.35'/%3E%3Cpath d='M78 158 Q88 152 100 158 Q112 152 122 158' stroke='%23d0d0d8' stroke-width='0.6' opacity='0.25'/%3E%3Cpath d='M82 162 Q90 156 100 162 Q110 156 118 162' stroke='%23d0d0d8' stroke-width='0.5' opacity='0.2'/%3E%3C!-- Brain stem --%3E%3Cpath d='M95 168 Q98 178 100 185 Q102 178 105 168' stroke='%23d0d0d8' stroke-width='1.2' opacity='0.3' fill='rgba(210,210,230,0.03)'/%3E%3C!-- Synapse nodes --%3E%3Ccircle cx='60' cy='45' r='2' fill='%238aaa8e' opacity='0.5'/%3E%3Ccircle cx='140' cy='45' r='2' fill='%238aaa8e' opacity='0.5'/%3E%3Ccircle cx='45' cy='85' r='1.5' fill='%23d0d0d8' opacity='0.4'/%3E%3Ccircle cx='155' cy='85' r='1.5' fill='%23d0d0d8' opacity='0.4'/%3E%3Ccircle cx='70' cy='110' r='1.5' fill='%238aaa8e' opacity='0.35'/%3E%3Ccircle cx='130' cy='110' r='1.5' fill='%238aaa8e' opacity='0.35'/%3E%3Ccircle cx='100' cy='70' r='2' fill='%23e4e4ec' opacity='0.5'/%3E%3C!-- Neural pathways --%3E%3Cpath d='M60 45 Q75 55 100 70' stroke='%238aaa8e' stroke-width='0.4' opacity='0.2' stroke-dasharray='3 2'/%3E%3Cpath d='M140 45 Q125 55 100 70' stroke='%238aaa8e' stroke-width='0.4' opacity='0.2' stroke-dasharray='3 2'/%3E%3Cpath d='M45 85 Q65 80 100 70' stroke='%23d0d0d8' stroke-width='0.3' opacity='0.15' stroke-dasharray='2 3'/%3E%3Cpath d='M155 85 Q135 80 100 70' stroke='%23d0d0d8' stroke-width='0.3' opacity='0.15' stroke-dasharray='2 3'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
-/* Electric pulse border ring (::after) */
+@keyframes brainPulseGlow {
+    0%, 100% { opacity: 0.15; filter: drop-shadow(0 0 4px rgba(210,210,230,0.1)); }
+    50% { opacity: 0.28; filter: drop-shadow(0 0 12px rgba(210,210,230,0.2)) drop-shadow(0 0 24px rgba(106,138,110,0.08)); }
+}
+
+/* Electric spark overlay (::after) — flashing synapse dots */
 .workflow-editor .node[data-type="brain"]::after {
     content: '';
     position: absolute;
-    inset: -2px;
-    border-radius: 45% 48% 42% 46% / 40% 38% 45% 42%;
-    border: 1px solid rgba(210,210,230,0.10);
-    animation: brainElectricBorder 4s ease-in-out infinite;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 260px;
     pointer-events: none;
     z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 180'%3E%3C!-- Electric arcs --%3E%3Cpath d='M60 45 L72 52 L68 58 L80 65 L100 70' stroke='%238aaa8e' stroke-width='0.8' fill='none' opacity='0.6' stroke-linecap='round'/%3E%3Cpath d='M140 45 L128 52 L132 58 L120 65 L100 70' stroke='%238aaa8e' stroke-width='0.8' fill='none' opacity='0.6' stroke-linecap='round'/%3E%3Cpath d='M45 85 L58 80 L65 78 L80 73 L100 70' stroke='%23d0d0d8' stroke-width='0.6' fill='none' opacity='0.4' stroke-linecap='round'/%3E%3Ccircle cx='60' cy='45' r='3' fill='%238aaa8e' opacity='0.8'/%3E%3Ccircle cx='140' cy='45' r='3' fill='%238aaa8e' opacity='0.8'/%3E%3Ccircle cx='100' cy='70' r='4' fill='%23e4e4ec' opacity='0.9'/%3E%3Ccircle cx='45' cy='85' r='2.5' fill='%23d0d0d8' opacity='0.6'/%3E%3Ccircle cx='155' cy='85' r='2.5' fill='%23d0d0d8' opacity='0.6'/%3E%3Ccircle cx='70' cy='110' r='2' fill='%238aaa8e' opacity='0.5'/%3E%3Ccircle cx='130' cy='110' r='2' fill='%238aaa8e' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: brainElectricFlash 3s ease-in-out infinite;
 }
 
-@keyframes brainElectricBorder {
-    0%, 100% {
-        border-color: rgba(210,210,230,0.08);
-        box-shadow: 0 0 8px rgba(210,210,230,0.02);
-    }
-    25% {
-        border-color: rgba(210,210,230,0.18);
-        box-shadow: 0 0 16px rgba(210,210,230,0.06), 0 0 30px rgba(106,138,110,0.03);
-    }
-    50% {
-        border-color: rgba(106,138,110,0.12);
-        box-shadow: 0 0 12px rgba(106,138,110,0.04);
-    }
-    75% {
-        border-color: rgba(210,210,230,0.15);
-        box-shadow: 0 0 20px rgba(210,210,230,0.05), 0 0 40px rgba(106,138,110,0.02);
-    }
+@keyframes brainElectricFlash {
+    0%, 100% { opacity: 0; }
+    15% { opacity: 0.5; }
+    25% { opacity: 0; }
+    40% { opacity: 0.3; }
+    50% { opacity: 0; }
+    65% { opacity: 0.4; }
+    75% { opacity: 0.05; }
 }
 
-/* Brain hover — electric surge */
+/* Brain hover — brighter brain + faster sparks */
 .workflow-editor .node[data-type="brain"]:hover {
     box-shadow:
-        0 0 50px rgba(210,210,230,0.10),
-        0 0 100px rgba(106,138,110,0.05),
-        inset 0 0 50px rgba(210,210,230,0.06),
-        inset 0 1px 0 rgba(255,255,255,0.10);
+        0 14px 56px rgba(0,0,0,0.55),
+        0 0 50px rgba(210,210,230,0.08),
+        0 0 100px rgba(106,138,110,0.04),
+        inset 0 0 40px rgba(210,210,230,0.05);
+}
+.workflow-editor .node[data-type="brain"]:hover::before {
+    opacity: 0.32;
+    animation-duration: 3s;
 }
 .workflow-editor .node[data-type="brain"]:hover::after {
-    animation-duration: 2s;
-    border-color: rgba(210,210,230,0.22);
+    animation-duration: 1.5s;
 }
 
 /* Brain selected state */
 .workflow-editor .node[data-type="brain"].selected {
     box-shadow:
-        0 0 0 2px rgba(210,210,230,0.20),
-        0 0 60px rgba(210,210,230,0.12),
-        0 0 120px rgba(106,138,110,0.06),
-        inset 0 0 50px rgba(210,210,230,0.06);
+        0 0 0 1.5px rgba(210,210,230,0.18),
+        0 14px 56px rgba(0,0,0,0.55),
+        0 0 60px rgba(210,210,230,0.10),
+        inset 0 0 40px rgba(210,210,230,0.05);
 }
 
-/* Brain node header — translucent, no hard edges */
+/* Brain node header — transparent so brain shows through */
 .workflow-editor .node[data-type="brain"] .node-header {
     background: transparent !important;
     border-bottom: none;
@@ -1069,68 +1073,40 @@
     z-index: 1;
 }
 .workflow-editor .node[data-type="brain"] .node-header-title {
-    color: #e4e4ec;
-    text-shadow: 0 0 12px rgba(210,210,230,0.3);
+    color: #ffffff;
+    text-shadow: 0 0 14px rgba(210,210,230,0.4);
     font-weight: 600;
     letter-spacing: 0.03em;
 }
 
-/* Brain node header icon — glowing brain */
+/* Brain node header icon — glowing */
 .workflow-editor .node[data-type="brain"] .node-header-icon {
-    background: rgba(210,210,230,0.08) !important;
+    background: rgba(210,210,230,0.10) !important;
     border-radius: 50%;
-    box-shadow: 0 0 12px rgba(210,210,230,0.10), 0 0 24px rgba(106,138,110,0.05);
+    box-shadow: 0 0 14px rgba(210,210,230,0.12), 0 0 28px rgba(106,138,110,0.06);
     overflow: visible;
 }
 
-/* Brain node ports & body */
+/* Brain node content on top of brain overlay */
 .workflow-editor .node[data-type="brain"] .node-body {
     position: relative;
     z-index: 1;
 }
 .workflow-editor .node[data-type="brain"] .port-dot {
     background: #d0d0d8 !important;
-    box-shadow: 0 0 6px rgba(210,210,230,0.3) !important;
+    box-shadow: 0 0 8px rgba(210,210,230,0.35) !important;
 }
 .workflow-editor .node[data-type="brain"] .port-label {
-    color: rgba(210,210,230,0.7);
+    color: rgba(255,255,255,0.75);
 }
 
-/* Brain node action bar */
+/* Brain node run button */
 .workflow-editor .node[data-type="brain"] .node-actions .run-btn {
     background: rgba(210,210,230,0.12);
-    color: #e4e4ec;
+    color: #ffffff;
+    border: none;
 }
 .workflow-editor .node[data-type="brain"] .node-actions .run-btn:hover {
-    background: rgba(210,210,230,0.20);
-    box-shadow: 0 0 12px rgba(210,210,230,0.15);
-}
-
-/* Electric synapse dots on the brain node body */
-.workflow-editor .node[data-type="brain"] .node-header::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    right: 20px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #d0d0d8;
-    box-shadow:
-        -40px 15px 0 1px rgba(210,210,230,0.4),
-        30px 25px 0 0.5px rgba(106,138,110,0.5),
-        -20px 45px 0 1px rgba(210,210,230,0.3),
-        45px 40px 0 0.5px rgba(106,138,110,0.4),
-        10px 60px 0 1px rgba(210,210,230,0.3);
-    animation: brainNodeSparks 3s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-@keyframes brainNodeSparks {
-    0%, 100% { opacity: 0.2; }
-    20% { opacity: 0.8; }
-    40% { opacity: 0.1; }
-    60% { opacity: 0.6; }
-    80% { opacity: 0.15; }
+    background: rgba(210,210,230,0.22);
+    box-shadow: 0 0 14px rgba(210,210,230,0.18);
 }
