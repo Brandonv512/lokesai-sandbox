@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
   <link rel="stylesheet" href="workflow-editor.css?v=1">
 </head>
 
@@ -50,6 +50,7 @@
       </div>
     </div>
     <div class="header-center">
+      <span class="header-breadcrumb" id="headerBreadcrumb">Command Center <span class="breadcrumb-sep">&rsaquo;</span> Studio</span>
     </div>
     <div class="header-right">
       <div class="status-badge" id="workflowStatus">
@@ -168,13 +169,23 @@
           </div>
           <input type="text" class="cc-search-input" id="dashCardSearchInput" placeholder="Search..." oninput="filterCards(this.value, 'dash')">
           <div class="cc-char-grid" id="dashCharacterCardGrid">
-            <div class="dash-card-grid-empty" id="dashCardGridEmpty">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.3)" stroke-width="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="3"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-              <p>No characters</p>
+            <!-- Skeleton loading thumbs (removed by JS on data load) -->
+            <div class="skeleton skeleton-thumb cc-skeleton-char"></div>
+            <div class="skeleton skeleton-thumb cc-skeleton-char"></div>
+            <div class="skeleton skeleton-thumb cc-skeleton-char"></div>
+            <div class="skeleton skeleton-thumb cc-skeleton-char"></div>
+            <div class="dash-card-grid-empty" id="dashCardGridEmpty" style="display:none">
+              <div class="empty-state-anim">
+                <svg class="empty-orbit-rings" width="80" height="80" viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="50" stroke="rgba(198,166,100,0.15)" stroke-width="1" stroke-dasharray="6 4" class="orbit-ring-1"/>
+                  <circle cx="60" cy="60" r="35" stroke="rgba(0,229,160,0.12)" stroke-width="1" stroke-dasharray="4 6" class="orbit-ring-2"/>
+                  <rect x="42" y="38" width="36" height="44" rx="4" fill="rgba(198,166,100,0.12)"/>
+                  <line x1="60" y1="52" x2="60" y2="68" stroke="rgba(198,166,100,0.2)" stroke-width="1.5"/>
+                  <line x1="52" y1="60" x2="68" y2="60" stroke="rgba(198,166,100,0.2)" stroke-width="1.5"/>
+                </svg>
+                <span class="empty-state-title">No characters</span>
+                <span class="empty-state-hint">Create your first character</span>
+              </div>
             </div>
           </div>
         </div>
@@ -200,11 +211,20 @@
             <!-- Aspect Ratio Badge -->
             <div class="cc-preview-ratio-badge">9:16</div>
             <div class="cc-preview-placeholder" id="ccPreviewPlaceholder">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.25)" stroke-width="1">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              <span>Select a character to preview</span>
+              <div class="empty-state-illustration">
+                <svg class="empty-orbit-rings" width="120" height="120" viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="50" stroke="rgba(198,166,100,0.15)" stroke-width="1" stroke-dasharray="6 4" class="orbit-ring-1"/>
+                  <circle cx="60" cy="60" r="35" stroke="rgba(0,229,160,0.12)" stroke-width="1" stroke-dasharray="4 6" class="orbit-ring-2"/>
+                  <path d="M60 30 C60 30, 52 42, 52 50 C52 54.4, 55.6 58, 60 58 C64.4 58, 68 54.4, 68 50 C68 42, 60 30, 60 30Z" fill="rgba(198,166,100,0.2)"/>
+                  <circle cx="60" cy="25" r="8" fill="rgba(198,166,100,0.2)"/>
+                  <path d="M48 70 C48 64, 52 60, 60 60 C68 60, 72 64, 72 70 L72 80 L48 80 Z" fill="rgba(198,166,100,0.15)"/>
+                </svg>
+                <span class="empty-particle empty-particle--cyan"></span>
+                <span class="empty-particle empty-particle--gold"></span>
+                <span class="empty-particle empty-particle--neon"></span>
+              </div>
+              <span class="empty-state-title">Select a character to preview</span>
+              <span class="empty-state-hint">Choose from the sidebar or create a new character</span>
             </div>
             <img id="ccPreviewImage" class="cc-preview-img" src="" alt="Character preview" style="display:none;">
           </div>
@@ -305,6 +325,7 @@
         <!-- Prompt Bar -->
         <div class="cc-prompt-bar">
           <div class="cc-prompt-glow-wrapper" id="ccPromptGlowWrapper" data-generating="false">
+            <div class="cc-glow-ring-track"></div>
             <span class="cc-glow-particle"></span>
             <span class="cc-glow-particle"></span>
             <span class="cc-glow-particle"></span>
@@ -369,11 +390,15 @@
           </div>
           <div class="cc-motion-grid" id="motionGrid">
             <div class="cc-motion-empty" id="motionEmpty">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-                <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-              </svg>
-              <span>No motions yet</span>
-              <span style="font-size:0.6rem;opacity:0.5">Upload or search web for reference videos</span>
+              <div class="empty-state-anim">
+                <svg class="empty-orbit-rings" width="80" height="80" viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="50" stroke="rgba(198,166,100,0.15)" stroke-width="1" stroke-dasharray="6 4" class="orbit-ring-1"/>
+                  <circle cx="60" cy="60" r="35" stroke="rgba(0,229,160,0.12)" stroke-width="1" stroke-dasharray="4 6" class="orbit-ring-2"/>
+                  <polygon points="75 60 50 45 50 75" fill="rgba(198,166,100,0.15)" stroke="rgba(198,166,100,0.25)" stroke-width="1"/>
+                </svg>
+                <span class="empty-state-title">No motions yet</span>
+                <span class="empty-state-hint">Upload or search web for reference videos</span>
+              </div>
             </div>
           </div>
           <div class="cc-motion-selected" id="motionSelectedBar" style="display:none">

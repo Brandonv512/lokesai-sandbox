@@ -478,6 +478,17 @@ function switchTab(tabName) {
     document.querySelectorAll('.top-nav-tab').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-page').forEach(page => page.classList.remove('active'));
 
+    // Update header breadcrumb
+    const breadcrumbMap = {
+        'command-center': 'Command Center \u203A Studio',
+        'social': 'Social \u203A Connections',
+        'config': 'Config \u203A Settings',
+        'assets': 'Assets \u203A Library',
+        'workflows': 'Workflows \u203A Editor'
+    };
+    const breadcrumb = document.getElementById('headerBreadcrumb');
+    if (breadcrumb) breadcrumb.textContent = breadcrumbMap[tabName] || tabName;
+
     // Activate selected tab and page
     const tab = document.querySelector(`.top-nav-tab[data-tab="${tabName}"]`);
     const page = document.querySelector(`.tab-page[data-page="${tabName}"]`);
@@ -2818,13 +2829,16 @@ function renderCardGrid() {
         const empty = document.getElementById(emptyId);
         if (!grid) return;
 
+        // Remove skeleton loading placeholders
+        grid.querySelectorAll('.cc-skeleton-char').forEach(s => s.remove());
+
         // Sidebar workspace grid uses compact thumbnail cards
         if (gridId === 'dashCharacterCardGrid' && grid.classList.contains('cc-char-grid')) {
             const addTile = `<div class="cc-char-add-tile" onclick="openCreateCardModal()" title="Create New Character">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 <span>New</span>
             </div>`;
-            if (empty) empty.style.display = 'none';
+            if (empty) empty.style.display = iphoneState.cards.length === 0 ? 'flex' : 'none';
             grid.innerHTML = addTile + iphoneState.cards.map(card => {
                 const isSelected = iphoneState.selectedCardIds.includes(card.id);
                 const thumbUrl = card.thumbnail_url || card.character_data?.referenceImageUrl;
