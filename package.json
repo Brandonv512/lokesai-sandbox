@@ -1,0 +1,21 @@
+{
+  "name": "loki-ai-dashboard",
+  "version": "2.0.0",
+  "description": "Loki AI Generator - Built-in pipeline engine with multi-user support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "node migrate.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.13.1",
+    "bullmq": "^5.34.8",
+    "ioredis": "^5.4.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^14.14.0"
+  }
+}

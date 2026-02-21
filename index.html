@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loki AI Generator</title>
+  <meta name="description" content="Loki AI Generator - Video automation engine powered by n8n workflows">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='none' stroke='%23c6a664' stroke-width='1.5'/%3E%3Cpath d='M6 20 C10 8,14 22,16 14 S22 6,26 16' stroke='%23c6a664' stroke-width='2.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="workflow-editor.css?v=1">
+</head>
+
+<body>
+  <!-- Cinematic Canvas Background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg width="36" height="36" viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#e5c98d" />
+              <stop offset="30%" stop-color="#c6a664" />
+              <stop offset="60%" stop-color="#b8923e" />
+              <stop offset="100%" stop-color="#8c7335" />
+            </linearGradient>
+            <filter id="logoGlow">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+          <!-- Outer circle -->
+          <circle cx="60" cy="60" r="54" stroke="url(#logoGold)" stroke-width="1.5" fill="none" opacity="0.4" class="logo-circle-draw" />
+          <!-- Main wave -->
+          <path d="M18 65 C30 30, 45 75, 60 50 S85 25, 102 55" stroke="url(#logoGold)" stroke-width="4.5" stroke-linecap="round" fill="none" filter="url(#logoGlow)" class="logo-draw" />
+          <!-- Secondary wave -->
+          <path d="M22 78 C38 58, 55 85, 72 62 S92 45, 98 68" stroke="url(#logoGold)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5" class="logo-draw-secondary" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="header-title">Loki AI</h1>
+        <p class="header-subtitle">Generator</p>
+      </div>
+    </div>
+    <div class="header-center">
+    </div>
+    <div class="header-right">
+      <div class="status-badge" id="workflowStatus">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading...</span>
+      </div>
+      <button class="btn btn-icon" id="refreshBtn" title="Refresh">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 11-6.219-8.56" />
+          <polyline points="21 3 21 9 15 9" />
+        </svg>
+      </button>
+      <button class="btn btn-upgrade" id="upgradeBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Upgrade
+      </button>
+      <div class="user-menu" id="userMenu">
+        <button class="user-menu-trigger" id="userMenuTrigger" onclick="document.getElementById('userMenu').classList.toggle('open')">
+          <div class="user-avatar" id="userAvatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <span class="user-name" id="userDisplayName">User</span>
+          <span class="user-plan-badge plan-starter" id="userPlanBadge">Starter</span>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="user-dropdown-header">
+            <span class="user-dropdown-email" id="userDropdownEmail"></span>
+            <span class="user-dropdown-runs" id="userRunsDisplay">0/15 runs</span>
+          </div>
+          <button class="user-dropdown-item" onclick="logout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+      <!-- Hidden elements moved from header for functionality -->
+      <select id="llmProvider" class="input-select" style="display:none;" title="LLM Provider">
+        <option value="gemini">Gemini 2.5 Flash</option>
+        <option value="claude">Claude Sonnet 4</option>
+      </select>
+      <input type="checkbox" id="useReferenceImage" checked style="display:none;">
+    </div>
+  </header>
+
+  <!-- Top Tab Navigation -->
+  <nav class="top-nav" id="topNav">
+    <button class="top-nav-tab active" data-tab="command-center" onclick="switchTab('command-center')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Command Center
+    </button>
+    <button class="top-nav-tab" data-tab="social" onclick="switchTab('social')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Social
+    </button>
+    <button class="top-nav-tab" data-tab="config" onclick="switchTab('config')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Config
+    </button>
+    <button class="top-nav-tab" data-tab="assets" onclick="switchTab('assets')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Assets
+    </button>
+    <button class="top-nav-tab" data-tab="workflows" onclick="switchTab('workflows')">
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="24" cy="8" r="3"/><circle cx="16" cy="24" r="3"/><line x1="11" y1="8" x2="21" y2="8"/><line x1="22" y1="11" x2="18" y2="21"/><line x1="10" y1="11" x2="14" y2="21"/></svg>
+      Workflows
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- ===== TAB PAGE: COMMAND CENTER (Studio Workspace) ===== -->
+    <div class="tab-page active" data-page="command-center">
+
+    <!-- Studio Workspace: 3-column layout -->
+    <div class="cc-workspace">
+
+      <!-- LEFT SIDEBAR: Schedule + Character Grid -->
+      <aside class="cc-sidebar-left">
+        <!-- Schedule Dropdown -->
+        <div class="cc-sidebar-section">
+          <button class="cc-sidebar-toggle" onclick="this.parentElement.classList.toggle('open')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Schedule</span>
+            <span class="cc-next-run" id="nextRun">--:--</span>
+            <svg class="section-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="cc-sidebar-dropdown">
+            <div class="cc-schedule-grid" id="quickScheduleGrid">
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="06:00" data-index="0" onchange="syncQuickSchedule(0, this.value)"></div>
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="09:00" data-index="1" onchange="syncQuickSchedule(1, this.value)"></div>
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="12:00" data-index="2" onchange="syncQuickSchedule(2, this.value)"></div>
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="18:00" data-index="3" onchange="syncQuickSchedule(3, this.value)"></div>
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="21:00" data-index="4" onchange="syncQuickSchedule(4, this.value)"></div>
+              <div class="cc-schedule-pill"><input type="time" class="input-time input-time-quick" value="00:00" data-index="5" onchange="syncQuickSchedule(5, this.value)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Character Grid -->
+        <div class="cc-sidebar-section cc-char-section">
+          <div class="cc-sidebar-header">
+            <span class="cc-sidebar-label">Characters</span>
+            <button class="cc-new-char-btn" onclick="openCreateCardModal()" title="New Character">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+            </button>
+          </div>
+          <input type="text" class="cc-search-input" id="dashCardSearchInput" placeholder="Search..." oninput="filterCards(this.value, 'dash')">
+          <div class="cc-char-grid" id="dashCharacterCardGrid">
+            <div class="dash-card-grid-empty" id="dashCardGridEmpty">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.3)" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              <p>No characters</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats (compact) -->
+        <div class="cc-sidebar-stats">
+          <div class="cc-stat"><span class="cc-stat-val" id="totalExecutions">--</span><span class="cc-stat-lbl">Runs</span></div>
+          <div class="cc-stat"><span class="cc-stat-val" id="successCount">--</span><span class="cc-stat-lbl">OK</span></div>
+          <div class="cc-stat"><span class="cc-stat-val" id="failedCount">--</span><span class="cc-stat-lbl">Fail</span></div>
+        </div>
+      </aside>
+
+      <!-- CENTER: Main Preview + Prompt Bar -->
+      <main class="cc-main">
+        <!-- Main Preview -->
+        <div class="cc-preview-container">
+          <div class="cc-preview" id="ccMainPreview">
+            <!-- HUD Corner Brackets -->
+            <div class="cc-preview-hud-corner cc-preview-hud-corner--tl"></div>
+            <div class="cc-preview-hud-corner cc-preview-hud-corner--tr"></div>
+            <div class="cc-preview-hud-corner cc-preview-hud-corner--bl"></div>
+            <div class="cc-preview-hud-corner cc-preview-hud-corner--br"></div>
+            <!-- Aspect Ratio Badge -->
+            <div class="cc-preview-ratio-badge">9:16</div>
+            <div class="cc-preview-placeholder" id="ccPreviewPlaceholder">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.25)" stroke-width="1">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Select a character to preview</span>
+            </div>
+            <img id="ccPreviewImage" class="cc-preview-img" src="" alt="Character preview" style="display:none;">
+          </div>
+          <div class="cc-preview-name" id="ccPreviewName"></div>
+          <div class="cc-preview-bio" id="ccPreviewBio" style="display:none;">
+            <span class="cc-bio-personality" id="ccBioPersonality"></span>
+            <span class="cc-bio-location" id="ccBioLocation"></span>
+          </div>
+          <!-- Social platform icons -->
+          <div class="header-socials" style="justify-content:center; margin-top:8px;">
+            <div class="social-circle" data-platform="youtube" onclick="toggleSocialPopover('youtube', event)" title="YouTube Shorts">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              <span class="social-circle-check">&#10003;</span>
+              <div class="social-popover" id="popover-youtube" onclick="event.stopPropagation()">
+                <span class="popover-name">YouTube Shorts</span>
+                <span class="popover-status" id="popover-status-youtube">Not Connected</span>
+                <label class="toggle-switch popover-toggle"><input type="checkbox" id="popover-toggle-youtube" onchange="handlePopoverToggle('youtube', this.checked)" disabled><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+                <button class="popover-action-btn" id="popover-btn-youtube" onclick="connectPlatform('youtube')">Connect</button>
+              </div>
+            </div>
+            <div class="social-circle" data-platform="facebook" onclick="toggleSocialPopover('facebook', event)" title="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span class="social-circle-check">&#10003;</span>
+              <div class="social-popover" id="popover-facebook" onclick="event.stopPropagation()">
+                <span class="popover-name">Facebook</span>
+                <span class="popover-status" id="popover-status-facebook">Not Connected</span>
+                <label class="toggle-switch popover-toggle"><input type="checkbox" id="popover-toggle-facebook" onchange="handlePopoverToggle('facebook', this.checked)" disabled><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+                <button class="popover-action-btn" id="popover-btn-facebook" onclick="connectPlatform('facebook')">Connect</button>
+              </div>
+            </div>
+            <div class="social-circle" data-platform="instagram" onclick="toggleSocialPopover('instagram', event)" title="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              <span class="social-circle-check">&#10003;</span>
+              <div class="social-popover" id="popover-instagram" onclick="event.stopPropagation()">
+                <span class="popover-name">Instagram</span>
+                <span class="popover-status" id="popover-status-instagram">Not Connected</span>
+                <label class="toggle-switch popover-toggle"><input type="checkbox" id="popover-toggle-instagram" onchange="handlePopoverToggle('instagram', this.checked)" disabled><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+                <button class="popover-action-btn" id="popover-btn-instagram" onclick="connectPlatform('instagram')">Connect</button>
+              </div>
+            </div>
+            <div class="social-circle" data-platform="twitter" onclick="toggleSocialPopover('twitter', event)" title="X (Twitter)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              <span class="social-circle-check">&#10003;</span>
+              <div class="social-popover" id="popover-twitter" onclick="event.stopPropagation()">
+                <span class="popover-name">X (Twitter)</span>
+                <span class="popover-status" id="popover-status-twitter">Not Connected</span>
+                <label class="toggle-switch popover-toggle"><input type="checkbox" id="popover-toggle-twitter" onchange="handlePopoverToggle('twitter', this.checked)" disabled><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+                <button class="popover-action-btn" id="popover-btn-twitter" onclick="connectPlatform('twitter')">Connect</button>
+              </div>
+            </div>
+            <div class="social-circle" data-platform="tiktok" onclick="toggleSocialPopover('tiktok', event)" title="TikTok">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+              <span class="social-circle-check">&#10003;</span>
+              <div class="social-popover" id="popover-tiktok" onclick="event.stopPropagation()">
+                <span class="popover-name">TikTok</span>
+                <span class="popover-status" id="popover-status-tiktok">Not Connected</span>
+                <label class="toggle-switch popover-toggle"><input type="checkbox" id="popover-toggle-tiktok" onchange="handlePopoverToggle('tiktok', this.checked)" disabled><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+                <button class="popover-action-btn" id="popover-btn-tiktok" onclick="connectPlatform('tiktok')">Connect</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Agent Preview Card (hidden by default) -->
+        <div class="cc-agent-preview" id="ccAgentPreview" style="display:none;">
+          <div class="cc-agent-preview-header">
+            <span class="cc-agent-preview-title">AI Content Idea</span>
+            <button class="cc-agent-preview-close" onclick="closeAgentPreview()">&times;</button>
+          </div>
+          <div class="cc-agent-preview-body">
+            <div class="cc-agent-field">
+              <label>Image Prompt</label>
+              <textarea id="agentImagePrompt" class="iphone-textarea" rows="3"></textarea>
+            </div>
+            <div class="cc-agent-field">
+              <label>Video Action</label>
+              <textarea id="agentVideoAction" class="iphone-textarea" rows="2"></textarea>
+            </div>
+            <div class="cc-agent-field">
+              <label>Caption</label>
+              <textarea id="agentCaption" class="iphone-textarea" rows="3"></textarea>
+            </div>
+            <div class="cc-agent-field">
+              <label>Voice Script</label>
+              <textarea id="agentVoiceScript" class="iphone-textarea" rows="2"></textarea>
+            </div>
+            <div class="cc-agent-field">
+              <label>Hashtags</label>
+              <input type="text" id="agentHashtags" class="iphone-input">
+            </div>
+          </div>
+          <div class="cc-agent-preview-actions">
+            <button class="btn btn-sm" onclick="regenerateAgentContent()">Regenerate</button>
+            <button class="btn btn-primary btn-sm" onclick="useAgentContent()">Use & Generate</button>
+          </div>
+        </div>
+
+        <!-- Prompt Bar -->
+        <div class="cc-prompt-bar">
+          <div class="cc-prompt-glow-wrapper" id="ccPromptGlowWrapper" data-generating="false">
+            <span class="cc-glow-particle"></span>
+            <span class="cc-glow-particle"></span>
+            <span class="cc-glow-particle"></span>
+          <div class="cc-prompt-row">
+            <textarea id="dashSceneContextInput" class="cc-prompt-input" placeholder="Describe a scene, action, or mood..." rows="2"></textarea>
+            <button class="btn btn-agent cc-agent-btn" id="ccAgentBtn" onclick="generateAgentContent()" title="AI Content Idea">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6-6.3 4.6 2.3-7-6-4.6h7.6z"/></svg>
+            </button>
+            <button class="btn btn-primary cc-generate-btn" id="ccGenerateBtn" onclick="generateFromStudio('dash')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Generate
+            </button>
+            <!-- Hidden trigger button for pipeline direct trigger -->
+            <button id="triggerBtn" style="display:none;"></button>
+          </div>
+          <div class="cc-agent-theme-row" id="ccAgentThemeRow" style="display:none;">
+            <input type="text" id="agentThemeInput" class="iphone-input" placeholder="Theme (e.g. coffee, gym, morning routine)" style="flex:1;">
+            <select id="agentMoodSelect" class="iphone-select" style="width:auto;min-width:100px;">
+              <option value="">Mood...</option>
+              <option value="funny">Funny</option>
+              <option value="inspirational">Inspirational</option>
+              <option value="dramatic">Dramatic</option>
+              <option value="chill">Chill</option>
+              <option value="edgy">Edgy</option>
+              <option value="romantic">Romantic</option>
+            </select>
+          </div>
+          <!-- Kling Presets (compact) -->
+          <div class="cc-presets-row" id="klingPresetsGrid">
+            <button class="cc-preset-chip" onclick="selectKlingPreset(this, 'Confident hip sway dance, looking directly at camera, rhythmic body movement, sultry confident expression')">Confident Dance</button>
+            <button class="cc-preset-chip" onclick="selectKlingPreset(this, 'Smooth body wave dance, hair flip motion, sultry expression, flowing movement from head to toe')">Body Wave</button>
+            <button class="cc-preset-chip" onclick="selectKlingPreset(this, 'Graceful spinning dance, arms flowing outward, elegant ballet-inspired movement, dreamy expression')">Graceful Spin</button>
+            <button class="cc-preset-chip" onclick="selectKlingPreset(this, 'Model runway strut walking forward, direct eye contact with camera, confident posture, fashion walk')">Model Strut</button>
+            <button class="cc-preset-chip" onclick="selectKlingPreset(this, 'Playful subtle dance movement, gentle smile, soft head tilt, light swaying motion, charming expression')">Playful</button>
+          </div>
+          </div><!-- /cc-prompt-glow-wrapper -->
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR: Motion Library + Settings -->
+      <aside class="cc-sidebar-right">
+        <div class="cc-sidebar-section cc-motion-section">
+          <div class="cc-sidebar-header">
+            <span class="cc-sidebar-label">Motion Library</span>
+            <label class="cc-motion-upload-btn" title="Upload motion video">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <input type="file" id="motionLibraryUploadInput" accept="video/*" style="display:none" onchange="handleMotionLibraryUpload(this.files[0])">
+            </label>
+          </div>
+          <div class="cc-motion-search">
+            <input type="text" id="motionSearchInput" placeholder="Search motions..." oninput="searchMotionsLocal(this.value)">
+            <button class="cc-motion-web-btn" onclick="searchMotionWeb()" title="Search web for motions">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+          <div class="cc-motion-filter-tabs">
+            <button class="cc-motion-tab active" data-cat="all" onclick="filterMotionCategory('all')">All</button>
+            <button class="cc-motion-tab" data-cat="dance" onclick="filterMotionCategory('dance')">Dance</button>
+            <button class="cc-motion-tab" data-cat="walk" onclick="filterMotionCategory('walk')">Walk</button>
+            <button class="cc-motion-tab" data-cat="gesture" onclick="filterMotionCategory('gesture')">Gesture</button>
+            <button class="cc-motion-tab" data-cat="mine" onclick="filterMotionCategory('mine')">Mine</button>
+          </div>
+          <div class="cc-motion-grid" id="motionGrid">
+            <div class="cc-motion-empty" id="motionEmpty">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+              <span>No motions yet</span>
+              <span style="font-size:0.6rem;opacity:0.5">Upload or search web for reference videos</span>
+            </div>
+          </div>
+          <div class="cc-motion-selected" id="motionSelectedBar" style="display:none">
+            <video class="cc-motion-selected-preview" id="motionSelectedPreview" muted loop playsinline></video>
+            <div class="cc-motion-selected-info">
+              <span class="cc-motion-selected-name" id="motionSelectedName"></span>
+              <span class="cc-motion-selected-label">Motion applied</span>
+            </div>
+            <button class="cc-motion-clear-btn" onclick="clearSelectedMotion()" title="Clear motion">&times;</button>
+          </div>
+        </div>
+
+        <!-- Quick Settings -->
+        <div class="cc-sidebar-section">
+          <button class="cc-sidebar-toggle" onclick="this.parentElement.classList.toggle('open')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>Settings</span>
+            <svg class="section-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="cc-sidebar-dropdown">
+            <div class="cc-settings-compact">
+              <div class="cc-setting-row">
+                <label>Video</label>
+                <select id="videoModel-quick" class="input-select cc-select" onchange="syncQuickSetting('videoModel', this.value)">
+                  <option value="kling-2.6/image-to-video">Kling 2.6</option>
+                  <option value="kling-2.5/image-to-video">Kling 2.5</option>
+                  <option value="wan/2-6-image-to-video">Wan 2.6</option>
+                </select>
+              </div>
+              <div class="cc-setting-row">
+                <label>Duration</label>
+                <select id="videoDuration-quick" class="input-select cc-select" onchange="syncQuickSetting('videoDuration', this.value)">
+                  <option value="3">3s</option>
+                  <option value="5">5s</option>
+                  <option value="10">10s</option>
+                </select>
+              </div>
+              <div class="cc-setting-row">
+                <label>Image</label>
+                <select id="imageModel-quick" class="input-select cc-select" onchange="syncQuickSetting('imageModel', this.value)">
+                  <option value="nano-banana-pro">Nano Banana Pro</option>
+                  <option value="nano-banana">Nano Banana</option>
+                </select>
+              </div>
+              <div class="cc-setting-row">
+                <label>LLM</label>
+                <select id="llmProviderQuick" class="input-select cc-select" onchange="document.getElementById('llmProvider').value=this.value; state.llmProvider=this.value; saveState();">
+                  <option value="gemini">Gemini 2.5</option>
+                  <option value="claude">Claude Sonnet 4</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div><!-- /cc-workspace -->
+
+    <!-- Character Carousel -->
+    <div class="cc-carousel" id="ccCarousel">
+      <button class="cc-carousel-arrow cc-carousel-left" onclick="scrollCarousel(-1)" aria-label="Scroll left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="cc-carousel-track" id="ccCarouselTrack">
+        <!-- Populated by JS -->
+      </div>
+      <button class="cc-carousel-arrow cc-carousel-right" onclick="scrollCarousel(1)" aria-label="Scroll right">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Footer: Pipeline + Trigger + Workflows -->
+    <div class="cc-footer" id="ccFooter">
+      <button class="cc-footer-trigger" onclick="generateFromStudio('dash')" id="ccManualTrigger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Manual Trigger
+      </button>
+
+      <div class="cc-pipeline-dots" id="pipelineStages">
+        <div class="cc-pipeline-dot" data-stage="creative-director" id="stage-creative-director" title="Prompt Generation">
+          <span class="cc-dot"></span>
+          <span class="cc-dot-label">Prompt</span>
+          <span class="cc-dot-connector"></span>
+        </div>
+        <div class="cc-pipeline-dot" data-stage="image-gen" id="stage-image-gen" title="Image Generation">
+          <span class="cc-dot"></span>
+          <span class="cc-dot-label">Image</span>
+          <span class="cc-dot-connector"></span>
+        </div>
+        <div class="cc-pipeline-dot" data-stage="video-gen" id="stage-video-gen" title="Video Generation">
+          <span class="cc-dot"></span>
+          <span class="cc-dot-label">Video</span>
+          <span class="cc-dot-connector"></span>
+        </div>
+        <div class="cc-pipeline-dot" data-stage="review" id="stage-review" title="Review & Upload">
+          <span class="cc-dot"></span>
+          <span class="cc-dot-label">Upload</span>
+        </div>
+      </div>
+
+      <div class="cc-footer-right">
+        <div class="cc-pipeline-timer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="pipelineTimer">00:00</span>
+        </div>
+        <div class="pipeline-status-badge" id="pipelineStatusBadge">
+          <span class="pipeline-status-dot"></span>
+          <span id="pipelineStatusText">Idle</span>
+        </div>
+        <button class="btn btn-stop btn-sm" id="pipelineStopBtn" style="display:none;" onclick="stopPipeline()" title="Stop">Stop</button>
+      </div>
+
+      <!-- Hidden pipeline elements for monitoring (keep IDs for JS) -->
+      <div style="display:none;">
+        <div id="pipelineProgressFill"></div>
+        <div id="pipelineProgressGlow"></div>
+        <span id="pipelineProgressPct">0%</span>
+        <span id="detail-creative-director">Waiting...</span>
+        <span id="detail-image-gen">Nano Banana Pro</span>
+        <span id="detail-video-gen">--</span>
+        <span id="detail-review">Telegram Approval</span>
+        <div id="pipelineContentAlert" style="display:none;">
+          <span id="contentAlertDetail"></span>
+          <span id="contentRetryCount">0</span>
+          <span id="contentRetryTimer">00:00</span>
+        </div>
+        <div id="pipelineErrorBanner" style="display:none;"><span id="pipelineErrorText"></span></div>
+      </div>
+    </div>
+
+    <!-- ============ CALENDAR & SAVED LOOKS ============ -->
+    <section class="card card-full calendar-section reveal-up" id="calendarSection">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <h2>Calendar & Saved Looks</h2>
+        </div>
+        <div class="calendar-header-actions" style="display:flex;align-items:center;gap:8px;">
+          <select id="calendarFrequency" class="input-select" style="width:auto;min-width:140px;padding:6px 12px;font-size:0.78rem;" onchange="updateCalendarFrequency()">
+            <option value="daily">Daily (Mon-Sun)</option>
+            <option value="weekdays">Weekdays Only</option>
+            <option value="weekends">Weekends Only</option>
+          </select>
+          <button class="btn btn-sm btn-save" onclick="saveCalendar()">Save Calendar</button>
+        </div>
+      </div>
+      <div class="calendar-body">
+        <div class="saved-looks-panel">
+          <h3 class="calendar-sub-heading">Saved Looks <span class="saved-looks-count" id="savedLooksCount">(0)</span></h3>
+          <div class="saved-looks-grid" id="savedLooksGrid">
+            <div class="saved-looks-empty" id="savedLooksEmpty">
+              <p>No saved looks yet</p>
+              <p style="font-size:0.72rem;color:#666;">Hover over assets and click "Save as Look"</p>
+            </div>
+          </div>
+        </div>
+        <div class="calendar-grid-panel">
+          <h3 class="calendar-sub-heading">Week Schedule</h3>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    </div><!-- /tab-page command-center -->
+
+    <!-- ===== TAB PAGE: SOCIAL ===== -->
+    <div class="tab-page" data-page="social">
+
+    <!-- ============ SOCIAL MEDIA PUBLISHING HUB ============ -->
+    <section class="card card-full social-hub reveal-up" id="socialHub">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          <h2>Social Media Publishing</h2>
+        </div>
+        <span class="section-hint">Click platform to connect · Toggle to enable posting</span>
+      </div>
+      <div class="social-grid" id="socialGrid">
+        <!-- YouTube -->
+        <div class="social-card" data-platform="youtube" id="social-youtube">
+          <div class="social-card-top">
+            <div class="social-icon-wrap" style="--platform-color: #FF0000">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+              </svg>
+            </div>
+            <div class="social-info">
+              <span class="social-name">YouTube Shorts</span>
+              <span class="social-status" id="status-youtube">Not Connected</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-youtube" disabled>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <button class="social-connect-btn" id="connect-youtube" onclick="connectPlatform('youtube')">
+            <span class="connect-icon">⚡</span> Connect YouTube
+          </button>
+        </div>
+
+        <!-- Instagram -->
+        <div class="social-card" data-platform="instagram" id="social-instagram">
+          <div class="social-card-top">
+            <div class="social-icon-wrap" style="--platform-color: #E4405F">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+              </svg>
+            </div>
+            <div class="social-info">
+              <span class="social-name">Instagram</span>
+              <span class="social-status" id="status-instagram">Not Connected</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-instagram" disabled>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <button class="social-connect-btn" id="connect-instagram" onclick="connectPlatform('instagram')">
+            <span class="connect-icon">⚡</span> Connect Instagram
+          </button>
+        </div>
+
+        <!-- Facebook -->
+        <div class="social-card" data-platform="facebook" id="social-facebook">
+          <div class="social-card-top">
+            <div class="social-icon-wrap" style="--platform-color: #1877F2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+            </div>
+            <div class="social-info">
+              <span class="social-name">Facebook</span>
+              <span class="social-status" id="status-facebook">Not Connected</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-facebook" disabled>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <button class="social-connect-btn" id="connect-facebook" onclick="connectPlatform('facebook')">
+            <span class="connect-icon">⚡</span> Connect Facebook
+          </button>
+        </div>
+
+        <!-- X (Twitter) -->
+        <div class="social-card" data-platform="twitter" id="social-twitter">
+          <div class="social-card-top">
+            <div class="social-icon-wrap" style="--platform-color: #1DA1F2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </div>
+            <div class="social-info">
+              <span class="social-name">X (Twitter)</span>
+              <span class="social-status" id="status-twitter">Not Connected</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-twitter" disabled>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <button class="social-connect-btn" id="connect-twitter" onclick="connectPlatform('twitter')">
+            <span class="connect-icon">⚡</span> Connect X
+          </button>
+        </div>
+
+        <!-- TikTok -->
+        <div class="social-card" data-platform="tiktok" id="social-tiktok">
+          <div class="social-card-top">
+            <div class="social-icon-wrap" style="--platform-color: #00F2EA">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+              </svg>
+            </div>
+            <div class="social-info">
+              <span class="social-name">TikTok</span>
+              <span class="social-status" id="status-tiktok">Not Connected</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-tiktok" disabled>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <button class="social-connect-btn" id="connect-tiktok" onclick="connectPlatform('tiktok')">
+            <span class="connect-icon">⚡</span> Connect TikTok
+          </button>
+        </div>
+      </div>
+    </section>
+
+    </div><!-- /tab-page social -->
+
+    <!-- ===== TAB PAGE: CONFIG ===== -->
+    <div class="tab-page" data-page="config">
+
+    <!-- ============ CREATIVE DIRECTOR CONFIG ============ -->
+    <section class="card card-full cd-panel reveal-up" id="cdPanel">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          <h2>Creative Director Config</h2>
+        </div>
+        <div class="cd-header-actions">
+          <span class="cd-status" id="cdSaveStatus"></span>
+          <button class="btn btn-sm btn-save" id="saveAllConfigBtn" onclick="saveAgentConfig()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Save All to Workflow
+          </button>
+        </div>
+      </div>
+      <!-- Config Tabs -->
+      <div class="cd-tabs" id="cdTabs"></div>
+      <div class="cd-grid">
+        <!-- Left: Character + Content Rules -->
+        <div class="cd-col">
+          <div class="cd-field">
+            <label class="cd-label">Character Description</label>
+            <textarea class="prompt-editor cd-textarea" id="cdCharacterDesc" spellcheck="false"
+              placeholder="Describe the character's appearance, outfit, style..."></textarea>
+            <div class="prompt-footer">
+              <span class="char-count" id="cdCharCount">0 characters</span>
+              <span class="prompt-hint">Core character description for image generation</span>
+            </div>
+          </div>
+          <div class="cd-field">
+            <label class="cd-label">Content Rules</label>
+            <textarea class="prompt-editor prompt-editor-sm cd-textarea-sm" id="cdContentRules" spellcheck="false"
+              placeholder="Rules for the AI to follow when generating content..."></textarea>
+            <div class="prompt-footer">
+              <span class="prompt-hint">Guidelines the Creative Director agent must follow</span>
+            </div>
+          </div>
+          <div class="cd-field">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="cd-label" style="margin:0;">Reference Character</label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:11px;color:#a0977d;">Use in generation</span>
+                <label class="toggle-switch" style="transform:scale(0.85);">
+                  <input type="checkbox" id="useReferenceImage2" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="cd-ref-image-row">
+              <img id="cdRefImagePreview" class="ref-image cd-ref-thumb" src="" alt="Reference character">
+              <select class="input-text" id="cdRefCharacterSelect" onchange="onCdCharacterSelected()">
+                <option value="">-- Select a character --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Right: Prompts, Actions + Scenes pools, Variations -->
+        <div class="cd-col">
+          <div class="cd-field">
+            <div class="cd-list-header">
+              <label class="cd-label">Character Prompts Pool</label>
+              <button class="btn btn-sm btn-outline" onclick="addCdItem('prompts')">+ Add</button>
+            </div>
+            <div class="cd-list" id="cdPromptsList"></div>
+            <div class="prompt-footer">
+              <span class="prompt-hint">Base prompt variations — one is randomly selected each run and merged with scene + action</span>
+            </div>
+          </div>
+          <div class="cd-field">
+            <div class="cd-list-header">
+              <label class="cd-label">Actions Pool</label>
+              <button class="btn btn-sm btn-outline" onclick="addCdItem('actions')">+ Add</button>
+            </div>
+            <div class="cd-list" id="cdActionsList"></div>
+          </div>
+          <div class="cd-field">
+            <div class="cd-list-header">
+              <label class="cd-label">Scenes Pool</label>
+              <button class="btn btn-sm btn-outline" onclick="addCdItem('scenes')">+ Add</button>
+            </div>
+            <div class="cd-list" id="cdScenesList"></div>
+          </div>
+          <div class="cd-field">
+            <div class="cd-list-header">
+              <label class="cd-label">Variations</label>
+            </div>
+            <div class="cd-variations" id="cdVariations"></div>
+            <div class="prompt-footer">
+              <span class="prompt-hint">Random hair, background, skin tone, eye color, and hair type picked each run</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Music Pool + Caption Template (full width below the 2-col grid) -->
+      <div class="cd-grid" style="margin-top: 16px;">
+        <div class="cd-col">
+          <div class="cd-field">
+            <div class="cd-list-header">
+              <label class="cd-label">Music Pool</label>
+              <label class="btn btn-sm btn-outline" style="cursor:pointer;">
+                + Upload
+                <input type="file" accept="audio/*" id="musicUploadInput" style="display:none;" onchange="uploadMusic(this)">
+              </label>
+            </div>
+            <div class="cd-list" id="cdMusicPool" style="min-height: 48px;">
+              <div class="cd-list-empty" id="musicPoolEmpty" style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:0.85rem;">
+                No music tracks. Upload an MP3 to add background music to Reels.
+              </div>
+            </div>
+            <div class="prompt-footer">
+              <span class="prompt-hint">Audio tracks mixed into video before uploading. Pin a track to always use it, or leave unpinned for random selection.</span>
+            </div>
+          </div>
+        </div>
+        <div class="cd-col">
+          <div class="cd-field">
+            <label class="cd-label">Instagram Caption Template</label>
+            <textarea class="prompt-editor prompt-editor-sm cd-textarea-sm" id="cdCaptionTemplate" spellcheck="false"
+              placeholder="e.g. 🔥 {{action}} \n\n#ai #aiart #reels #viking"></textarea>
+            <div class="prompt-footer">
+              <span class="prompt-hint">Variables: <code>{{action}}</code>, <code>{{scene}}</code> — replaced with actual values each run</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Column Layout -->
+    <div class="grid-2col reveal-up">
+      <!-- Left Column -->
+      <div class="col-left">
+        <!-- Video Generation Settings -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" />
+              </svg>
+              <h2>Video Generation Settings</h2>
+            </div>
+            <button id="saveVideoSettingsBtn" class="btn btn-primary btn-sm">Save</button>
+          </div>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <label>Model</label>
+              <select id="videoModel" class="input-select">
+                <option value="kling-2.6/image-to-video" selected>Kling 2.6 Image-to-Video</option>
+                <option value="kling-2.5/image-to-video">Kling 2.5 Turbo</option>
+                <option value="wan/2-6-image-to-video">Wan 2.6 Image-to-Video</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Duration</label>
+              <select id="videoDuration" class="input-select">
+                <option value="3">3 seconds</option>
+                <option value="5" selected>5 seconds</option>
+                <option value="10">10 seconds</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Resolution</label>
+              <select id="videoResolution" class="input-select">
+                <option value="720p">720p</option>
+                <option value="1080p" selected>1080p</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Image Model</label>
+              <select id="imageModel" class="input-select">
+                <option value="nano-banana-pro" selected>Nano Banana Pro</option>
+                <option value="nano-banana">Nano Banana</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Aspect Ratio</label>
+              <select id="aspectRatio" class="input-select">
+                <option value="9:16" selected>9:16 (Portrait)</option>
+                <option value="16:9">16:9 (Landscape)</option>
+                <option value="1:1">1:1 (Square)</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Image Resolution</label>
+              <select id="imageResolution" class="input-select">
+                <option value="1K" selected>1K</option>
+                <option value="2K">2K</option>
+                <option value="4K">4K</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-right">
+        <!-- Schedule Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <h2>Post Schedule</h2>
+            </div>
+            <button class="btn btn-sm btn-save" id="saveScheduleBtn">Save</button>
+          </div>
+          <div class="schedule-grid" id="scheduleGrid">
+            <div class="schedule-item"><span class="schedule-label">Post 1</span><input type="time" class="input-time"
+                value="06:00" data-index="0"></div>
+            <div class="schedule-item"><span class="schedule-label">Post 2</span><input type="time" class="input-time"
+                value="09:00" data-index="1"></div>
+            <div class="schedule-item"><span class="schedule-label">Post 3</span><input type="time" class="input-time"
+                value="12:00" data-index="2"></div>
+            <div class="schedule-item"><span class="schedule-label">Post 4</span><input type="time" class="input-time"
+                value="18:00" data-index="3"></div>
+            <div class="schedule-item"><span class="schedule-label">Post 5</span><input type="time" class="input-time"
+                value="21:00" data-index="4"></div>
+            <div class="schedule-item"><span class="schedule-label">Post 6</span><input type="time" class="input-time"
+                value="00:00" data-index="5"></div>
+          </div>
+        </div>
+
+        <!-- Telegram Hub -->
+        <div class="card telegram-hub">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+              </svg>
+              <h2>Telegram</h2>
+            </div>
+            <button class="btn btn-sm btn-save" id="saveTelegramBtn">Save</button>
+          </div>
+
+          <!-- Custom Prompt Trigger -->
+          <div class="telegram-section">
+            <label class="section-label">Quick Trigger with Custom Prompt</label>
+            <div class="telegram-prompt-row">
+              <textarea class="input-text telegram-prompt-input" id="telegramCustomPrompt" rows="2" placeholder="e.g. A mysterious woman in a red dress standing on a rooftop at sunset..."></textarea>
+              <button class="btn btn-primary btn-trigger-prompt" id="triggerWithPromptBtn" title="Trigger workflow with this prompt">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                Send
+              </button>
+            </div>
+          </div>
+
+          <!-- Telegram Checks Toggle -->
+          <div class="telegram-section">
+            <label class="section-label">Approval Flow</label>
+            <div class="telegram-toggle-row">
+              <div class="telegram-toggle-info">
+                <span class="telegram-toggle-label">Telegram Approval Required</span>
+                <span class="telegram-toggle-desc">Videos are sent to Telegram for manual approval before publishing</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggleTelegramApproval" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Telegram Trigger Toggle -->
+          <div class="telegram-section">
+            <div class="telegram-toggle-row">
+              <div class="telegram-toggle-info">
+                <span class="telegram-toggle-label">Telegram Trigger Listener</span>
+                <span class="telegram-toggle-desc">Listen for incoming Telegram messages to trigger generation</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggleTelegramTrigger" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Config Fields -->
+          <div class="telegram-section">
+            <label class="section-label">Config</label>
+            <div class="settings-grid">
+              <div class="setting-item full-width">
+                <label>Chat ID</label>
+                <input type="text" class="input-text" id="telegramChatId" value="7700134015">
+              </div>
+              <div class="setting-item full-width">
+                <label>Approval Message</label>
+                <textarea class="input-text" id="approvalMessage" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Execution History -->
+    <section class="card card-full reveal-up">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          <h2>Recent Executions</h2>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="exec-table" id="execTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Status</th>
+              <th>Started</th>
+              <th>Duration</th>
+              <th>Mode</th>
+            </tr>
+          </thead>
+          <tbody id="execTableBody">
+            <tr class="empty-row">
+              <td colspan="5">No executions yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    </div><!-- /tab-page config -->
+
+    <!-- ===== TAB PAGE: ASSETS ===== -->
+    <div class="tab-page" data-page="assets">
+      <section class="card card-full assets-gallery">
+        <div class="card-header">
+          <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Generated Assets
+          </h2>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; gap:4px;">
+              <button class="assets-tab active" data-filter="all" onclick="filterAssets('all')">All</button>
+              <button class="assets-tab" data-filter="image" onclick="filterAssets('image')">Images</button>
+              <button class="assets-tab" data-filter="video" onclick="filterAssets('video')">Videos</button>
+            </div>
+            <span id="assetsCount" style="font-size:0.8rem; color:var(--text-muted);"></span>
+          </div>
+        </div>
+        <div id="assetsGrid" class="assets-grid"></div>
+        <div id="assetsEmpty" style="display:none; text-align:center; padding:60px 20px; color:var(--text-muted);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px; opacity:0.4;"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <p style="font-size:1rem; margin-bottom:4px;">No assets yet</p>
+          <p style="font-size:0.8rem;">Generate images and videos from the Command Center to see them here.</p>
+        </div>
+      </section>
+    </div><!-- /tab-page assets -->
+
+    <!-- ===== TAB PAGE: WORKFLOWS (Node-Based Editor) ===== -->
+    <div class="tab-page" data-page="workflows">
+      <div class="workflow-editor" id="workflowEditorRoot">
+
+        <!-- SVG Icon Defs for Workflow Editor -->
+        <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <symbol id="we-ic-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="8" y1="20" x2="16" y2="20"/></symbol>
+          <symbol id="we-ic-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+          <symbol id="we-ic-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+          <symbol id="we-ic-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="16" height="16" rx="2"/><path d="M22 8l-4 4 4 4"/></symbol>
+          <symbol id="we-ic-lipsync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></symbol>
+          <symbol id="we-ic-upscale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></symbol>
+          <symbol id="we-ic-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></symbol>
+          <symbol id="we-ic-stop" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+          <symbol id="we-ic-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+          <symbol id="we-ic-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></symbol>
+          <symbol id="we-ic-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></symbol>
+          <symbol id="we-ic-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></symbol>
+          <symbol id="we-ic-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></symbol>
+          <symbol id="we-ic-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></symbol>
+          <symbol id="we-ic-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></symbol>
+          <symbol id="we-ic-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><circle cx="8" cy="16" r="1" fill="currentColor"/><circle cx="16" cy="16" r="1" fill="currentColor"/><line x1="3" y1="16" x2="1" y2="16"/><line x1="21" y1="16" x2="23" y2="16"/></symbol>
+          <symbol id="we-ic-scissors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></symbol>
+          <symbol id="we-ic-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></symbol>
+        </svg>
+
+        <div id="we-app">
+          <!-- TOOLBAR -->
+          <div id="we-toolbar">
+            <div class="logo">
+              <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="we-lg" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#e5c98d"/><stop offset="100%" stop-color="#c6a664"/></linearGradient></defs><path d="M16 2L28 8v16l-12 6L4 24V8l12-6z" fill="url(#we-lg)" opacity="0.15" stroke="url(#we-lg)" stroke-width="1.5"/><circle cx="10" cy="12" r="2.5" fill="#e5c98d"/><circle cx="22" cy="12" r="2.5" fill="#c6a664"/><circle cx="16" cy="22" r="2.5" fill="#34d399"/><line x1="10" y1="12" x2="22" y2="12" stroke="#c6a664" stroke-width="1.2"/><line x1="22" y1="12" x2="16" y2="22" stroke="#c6a664" stroke-width="1.2"/><line x1="10" y1="12" x2="16" y2="22" stroke="#e5c98d" stroke-width="1.2"/></svg>
+              <span class="logo-text">Loki Workflows</span>
+            </div>
+            <div class="tb-sep"></div>
+            <button class="tb-btn primary" onclick="WorkflowEditor.runAll()"><svg><use href="#we-ic-play"/></svg>Run All</button>
+            <button class="tb-btn" onclick="WorkflowEditor.stopExecution()"><svg><use href="#we-ic-stop"/></svg>Stop</button>
+            <div class="tb-sep"></div>
+            <button class="tb-btn" onclick="WorkflowEditor.showSaveDialog()"><svg><use href="#we-ic-save"/></svg>Save</button>
+            <button class="tb-btn" onclick="WorkflowEditor.refreshWorkflowList()"><svg><use href="#we-ic-folder"/></svg>Load</button>
+            <button class="tb-btn danger" onclick="WorkflowEditor.clearCanvas()"><svg><use href="#we-ic-trash"/></svg>Clear</button>
+            <div class="tb-spacer"></div>
+            <button class="tb-btn" id="we-chat-toggle-btn" onclick="WorkflowEditor.toggleChatPanel()"><svg><use href="#we-ic-robot"/></svg>Workflow Agent</button>
+            <div class="tb-sep"></div>
+            <button class="tb-btn" onclick="WorkflowEditor.fitToView()"><svg><use href="#we-ic-fit"/></svg>Fit</button>
+            <button class="tb-btn" onclick="WorkflowEditor.zoomTo(1)">1:1</button>
+            <span class="zoom-display" id="we-zoom-display">100%</span>
+          </div>
+
+          <!-- SIDEBAR -->
+          <div id="we-sidebar">
+            <div class="section-title">Nodes</div>
+            <div class="node-palette" id="we-node-palette"></div>
+            <div class="section-title">Workflows</div>
+            <div class="workflow-list" id="we-workflow-list"></div>
+          </div>
+
+          <!-- CANVAS -->
+          <div id="we-canvas-container">
+            <canvas id="we-canvas-bg"></canvas>
+            <svg id="we-connections-svg">
+              <path id="we-drag-connection" d=""/>
+            </svg>
+            <div id="we-canvas" tabindex="0"></div>
+            <div id="we-selection-box"></div>
+          </div>
+
+          <!-- PROPERTIES PANEL -->
+          <div id="we-props-panel">
+            <div class="panel-header">
+              <span id="we-props-title">Properties</span>
+              <button class="tb-btn primary" id="we-props-run-btn" style="display:none" onclick="WorkflowEditor.runSelectedNode()"><svg><use href="#we-ic-play"/></svg>Run</button>
+            </div>
+            <div class="panel-body" id="we-props-body">
+              <div class="prop-empty">Select a node to view its properties</div>
+            </div>
+          </div>
+
+          <!-- CHAT PANEL -->
+          <div id="we-chat-panel">
+            <div class="chat-header">
+              <div class="chat-header-title">
+                <svg><use href="#we-ic-robot"/></svg>
+                <span>Workflow Agent</span>
+              </div>
+              <button class="chat-close-btn" onclick="WorkflowEditor.toggleChatPanel()">&times;</button>
+            </div>
+            <div class="chat-messages" id="we-chat-messages"></div>
+            <div class="chat-input-area">
+              <textarea id="we-chat-input" placeholder="Ask the workflow agent..." rows="1"></textarea>
+              <button class="chat-send-btn" id="we-chat-send-btn" onclick="WorkflowEditor.sendChatMessage()">
+                <svg><use href="#we-ic-send"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEXT MENU -->
+        <div class="context-menu" id="we-context-menu"></div>
+
+        <!-- TOASTS -->
+        <div id="we-toasts"></div>
+
+      </div>
+    </div><!-- /tab-page workflows -->
+
+  </main>
+
+  <!-- OAuth Popup Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="authModal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Connecting...</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div class="modal-spinner">
+          <div class="spinner"></div>
+        </div>
+        <p id="modalMessage">Setting up connection...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Modal (for platforms requiring app setup) -->
+  <div class="modal-overlay" id="setupOverlay">
+    <div class="modal modal-lg" id="setupModal">
+      <div class="modal-header">
+        <h3 id="setupTitle">Platform Setup</h3>
+        <button class="modal-close" onclick="closeSetupModal()">✕</button>
+      </div>
+      <div class="modal-body" id="setupBody"></div>
+      <div class="modal-footer" id="setupFooter"></div>
+    </div>
+  </div>
+
+  <!-- Asset Lightbox -->
+  <div class="asset-lightbox" id="assetLightbox" onclick="closeLightbox(event)">
+    <button class="asset-lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+    <div class="asset-lightbox-content" id="assetLightboxContent"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===================== iPHONE MODE OVERLAY ===================== -->
+  <div class="iphone-overlay" id="iphoneOverlay">
+    <div class="iphone-backdrop" onclick="toggleiPhoneMode()"></div>
+    <div class="iphone-frame">
+      <!-- Notch -->
+      <div class="iphone-notch">
+        <div class="iphone-notch-inner">
+          <div class="iphone-camera"></div>
+        </div>
+      </div>
+      <!-- Status bar -->
+      <div class="iphone-status-bar">
+        <span class="iphone-time" id="iphoneTime">9:41</span>
+        <div class="iphone-status-icons">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 00-6 0zm-4-4l2 2a7 7 0 019.9 0l2-2C14.21 8.21 9.79 8.21 5 13z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="17" y="4" width="4" height="16" rx="1"/><rect x="11" y="8" width="4" height="12" rx="1"/><rect x="5" y="12" width="4" height="8" rx="1"/></svg>
+          <div class="iphone-battery"><div class="iphone-battery-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- Swipeable Screen Container -->
+      <div class="iphone-screens-viewport">
+        <div class="iphone-screens" id="iphoneScreens">
+
+          <!-- Screen 1: Character Hub -->
+          <div class="iphone-screen" data-screen="hub">
+            <div class="iphone-screen-header">
+              <h2>Character Hub</h2>
+              <button class="iphone-btn-sm" onclick="openCreateCardModal()">+ New</button>
+            </div>
+            <div class="iphone-search-bar">
+              <input type="text" id="cardSearchInput" placeholder="Search characters..." oninput="filterCards(this.value)">
+              <select id="cardCategoryFilter" onchange="filterCards()">
+                <option value="">All</option>
+                <option value="general">General</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="scifi">Sci-Fi</option>
+                <option value="anime">Anime</option>
+                <option value="realistic">Realistic</option>
+              </select>
+            </div>
+            <div class="card-grid" id="characterCardGrid">
+              <div class="card-grid-empty" id="cardGridEmpty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.3)" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                  <line x1="12" y1="8" x2="12" y2="16"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                <p>No character cards yet</p>
+                <button class="iphone-btn-sm" onclick="openCreateCardModal()">Create Your First Card</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen 2: Video Studio -->
+          <div class="iphone-screen" data-screen="studio">
+            <div class="iphone-screen-header">
+              <h2>Video Studio</h2>
+            </div>
+            <div class="studio-section">
+              <h3>Selected Characters</h3>
+              <div class="studio-card-bar" id="studioCardBar">
+                <div class="studio-card-bar-empty">Tap cards in Character Hub to select</div>
+              </div>
+            </div>
+            <div class="studio-section">
+              <h3>Scene Context</h3>
+              <textarea id="sceneContextInput" class="iphone-textarea" placeholder="Describe the scene setting, mood, action..." rows="3"></textarea>
+            </div>
+            <div class="studio-section">
+              <h3>Composed Prompt</h3>
+              <div class="studio-prompt-preview" id="studioPromptPreview">
+                Select characters and add context to preview the composed prompt
+              </div>
+            </div>
+            <div class="studio-section">
+              <h3>Voice Script (Optional)</h3>
+              <textarea id="voiceScriptInput" class="iphone-textarea" placeholder="Enter text for voice-over..." rows="2"></textarea>
+            </div>
+            <div class="studio-actions">
+              <button class="iphone-btn" id="studioPreviewBtn" onclick="previewComposedPrompt()">Preview Prompt</button>
+              <button class="iphone-btn iphone-btn-primary" id="studioGenerateBtn" onclick="generateFromStudio()">Generate Video</button>
+            </div>
+          </div>
+
+          <!-- Screen 3: Schedule Planner -->
+          <div class="iphone-screen" data-screen="schedule">
+            <div class="iphone-screen-header">
+              <h2>Schedule Planner</h2>
+              <label class="toggle-switch" style="transform:scale(0.75);">
+                <input type="checkbox" id="iphoneScheduleEnabled" onchange="saveIphoneSchedule()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="schedule-card-section">
+              <h3>Character Rotation</h3>
+              <p class="schedule-hint">Select cards to rotate through for scheduled posts</p>
+              <div class="schedule-card-list" id="scheduleCardList">
+                <div class="schedule-card-list-empty">No cards selected for rotation</div>
+              </div>
+              <button class="iphone-btn-sm" onclick="openScheduleCardPicker()">+ Add Cards</button>
+            </div>
+            <div class="schedule-times-section">
+              <h3>Post Times</h3>
+              <div class="schedule-time-pills" id="scheduleTimePills"></div>
+            </div>
+          </div>
+
+          <!-- Screen 4: Settings -->
+          <div class="iphone-screen" data-screen="settings">
+            <div class="iphone-screen-header">
+              <h2>Settings</h2>
+            </div>
+            <div class="settings-group">
+              <h3>Voice Provider</h3>
+              <div class="settings-row">
+                <span>ElevenLabs API Key</span>
+                <input type="password" id="elevenLabsKeyInput" class="iphone-input" placeholder="sk-..." style="width:160px;">
+              </div>
+              <button class="iphone-btn-sm" onclick="testElevenLabsKey()">Test Connection</button>
+            </div>
+            <div class="settings-group">
+              <h3>Video Settings</h3>
+              <div class="settings-row">
+                <span>Model</span>
+                <select id="iphoneVideoModel" class="iphone-select">
+                  <option value="kling-2.6/image-to-video">Kling 2.6</option>
+                  <option value="wan/2-6-image-to-video">Wan 2.6</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <span>Duration</span>
+                <select id="iphoneVideoDuration" class="iphone-select">
+                  <option value="5">5 seconds</option>
+                  <option value="10">10 seconds</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-group">
+              <h3>Social Connections</h3>
+              <div class="settings-social-list" id="iphoneSocialList"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Tab Bar -->
+      <div class="iphone-tab-bar">
+        <button class="iphone-tab active" data-tab="0" onclick="switchIphoneTab(0)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>Hub</span>
+        </button>
+        <button class="iphone-tab" data-tab="1" onclick="switchIphoneTab(1)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+          </svg>
+          <span>Studio</span>
+        </button>
+        <button class="iphone-tab" data-tab="2" onclick="switchIphoneTab(2)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>Schedule</span>
+        </button>
+        <button class="iphone-tab" data-tab="3" onclick="switchIphoneTab(3)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+
+      <!-- Home Indicator -->
+      <div class="iphone-home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ===================== CHARACTER CARD MODALS ===================== -->
+
+  <!-- Create/Edit Card Modal -->
+  <div class="modal-overlay" id="cardModalOverlay" style="display:none;">
+    <div class="modal modal-lg" id="cardModal">
+      <div class="modal-header">
+        <h3 id="cardModalTitle">Create Character Card</h3>
+        <button class="modal-close" onclick="closeCardModal()">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <div class="card-form-steps" id="cardFormSteps">
+          <!-- Step 1: Name -->
+          <div class="form-step active" data-step="1">
+            <h4>Name Your Character</h4>
+            <div class="form-field">
+              <label>Character Name</label>
+              <input type="text" id="cardName" class="iphone-input" placeholder="e.g. Kimi, Astrid, Luna...">
+            </div>
+            <!-- Hidden fields for backwards compat -->
+            <input type="hidden" id="cardDescription" value="">
+            <input type="hidden" id="cardCategory" value="general">
+            <input type="hidden" id="cardTags" value="">
+          </div>
+          <!-- Step 2: Bio & Personality -->
+          <div class="form-step" data-step="2">
+            <h4>Bio & Personality</h4>
+            <div class="form-field">
+              <label>Character Bio</label>
+              <textarea id="cardBio" class="iphone-textarea" placeholder="Short elevator pitch for the character..." rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Personality</label>
+              <textarea id="cardPersonality" class="iphone-textarea" placeholder="e.g. Deadpool-style humor, breaks fourth wall, sarcastic but loveable..." rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Backstory</label>
+              <textarea id="cardBackstory" class="iphone-textarea" placeholder="Origin story, background, how they got here..." rows="3"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Location</label>
+              <input type="text" id="cardLocation" class="iphone-input" placeholder="e.g. Nordic fjords / modern-day Brooklyn coffee shops">
+            </div>
+            <div class="form-field">
+              <label>Interests</label>
+              <textarea id="cardInterests" class="iphone-textarea" placeholder="Hobbies, obsessions, passions..." rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Humor Style</label>
+              <select id="cardHumorStyle" class="iphone-select">
+                <option value="">Not specified</option>
+                <option value="sarcastic">Sarcastic</option>
+                <option value="wholesome">Wholesome</option>
+                <option value="dark">Dark</option>
+                <option value="absurdist">Absurdist</option>
+                <option value="deadpan">Deadpan</option>
+                <option value="self-deprecating">Self-deprecating</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Catchphrases <span style="font-size:0.7rem;opacity:0.4">(one per line)</span></label>
+              <textarea id="cardCatchphrases" class="iphone-textarea" placeholder="By Odin's WiFi!&#10;That's not how we did it in Valhalla" rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Content Voice</label>
+              <textarea id="cardContentVoice" class="iphone-textarea" placeholder="How they speak in captions/scripts — e.g. First person, casual, like talking to a friend" rows="2"></textarea>
+            </div>
+          </div>
+          <!-- Step 3: Appearance + Generate Portraits -->
+          <div class="form-step" data-step="3">
+            <h4>Appearance</h4>
+            <div class="form-field">
+              <label>Describe Your Character</label>
+              <textarea id="cardAppearance" class="iphone-textarea" placeholder="Full visual description: appearance, style, aesthetic, body type, hair, eyes, vibe..." rows="5"></textarea>
+              <input type="hidden" id="cardStyle" value="">
+            </div>
+            <div class="form-field" style="margin-top:16px;">
+              <button class="btn btn-primary" id="cardGenPortraitsBtn" onclick="generateCardPortraits()" style="width:100%;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6-6.3 4.6 2.3-7-6-4.6h7.6z"/>
+                </svg>
+                Generate Portraits (1 credit)
+              </button>
+            </div>
+            <div class="form-field" style="margin-top:12px;">
+              <label style="text-align:center;display:block;color:rgba(255,255,255,0.3);font-size:11px;margin-bottom:8px;">Or upload your own image</label>
+              <div class="card-upload-zone" id="cardImageUploadZone">
+                <input type="file" id="cardImageFileInput" accept="image/*" style="display:none;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(198,166,100,0.4)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span>Drop image here or click to upload</span>
+              </div>
+              <div class="card-upload-preview" id="cardImagePreview" style="display:none;">
+                <img id="cardImagePreviewImg" src="" alt="Preview">
+                <button class="cd-delete-btn" onclick="clearCardImageUpload()" title="Remove">&#x2715;</button>
+              </div>
+            </div>
+          </div>
+          <!-- Step 4: Image Selection Grid -->
+          <div class="form-step" data-step="4">
+            <h4>Choose Your Portrait</h4>
+            <p style="font-size:0.8rem;color:rgba(255,255,255,0.45);margin-bottom:12px;">Select the image that best represents your character</p>
+            <div class="card-gen-progress-bar">
+              <div class="card-gen-progress-fill" id="cardGenProgressFill"></div>
+              <span class="card-gen-progress-text" id="cardGenProgressText">Generating...</span>
+            </div>
+            <div class="card-gen-image-grid" id="cardGenImageGrid"></div>
+            <div class="card-gen-image-actions">
+              <button class="btn" id="cardGenMoreBtn" onclick="generateMoreCardPortraits()">Generate More (1 credit)</button>
+              <button class="btn btn-primary" id="cardGenUseSelectedBtn" onclick="useSelectedCardImage()" disabled>Use Selected</button>
+            </div>
+          </div>
+          <!-- Step 5: Voice -->
+          <div class="form-step" data-step="5">
+            <h4>Voice</h4>
+            <div class="form-field">
+              <label>Voice</label>
+              <select id="cardVoiceSelect" class="iphone-select">
+                <option value="">No voice assigned</option>
+              </select>
+              <button class="iphone-btn-sm" onclick="previewSelectedVoice()" style="margin-top:8px;">Preview Voice</button>
+            </div>
+          </div>
+          <!-- Step 6: Outfit & Prompt + Save -->
+          <div class="form-step" data-step="6">
+            <h4>Outfits & Prompt</h4>
+            <div class="form-field">
+              <label>Default Outfit</label>
+              <textarea id="cardOutfit" class="iphone-textarea" placeholder="Default clothing/outfit description..." rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Prompt Template</label>
+              <textarea id="cardPromptTemplate" class="iphone-textarea" placeholder="Base prompt for this character. Use {{action}} and {{scene}} as placeholders..." rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="form-step-nav">
+          <button class="iphone-btn" id="cardFormPrev" onclick="cardFormPrevStep()" style="display:none;">Back</button>
+          <div class="form-step-dots" id="cardFormDots">
+            <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <button class="iphone-btn iphone-btn-primary" id="cardFormNext" onclick="cardFormNextStep()">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Detail Modal -->
+  <div class="modal-overlay" id="cardDetailOverlay" style="display:none;">
+    <div class="modal modal-lg" id="cardDetailModal">
+      <div class="modal-header">
+        <h3 id="cardDetailTitle">Character Details</h3>
+        <button class="modal-close" onclick="closeCardDetailModal()">&#x2715;</button>
+      </div>
+      <div class="modal-body" id="cardDetailBody"></div>
+      <div class="modal-footer">
+        <button class="iphone-btn" onclick="editCurrentCard()">Edit</button>
+        <button class="iphone-btn" onclick="cloneCurrentCard()">Clone</button>
+        <button class="iphone-btn" onclick="generateCurrentCardThumbnail()">Gen Thumbnail</button>
+        <button class="iphone-btn iphone-btn-danger" onclick="deleteCurrentCard()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ONBOARDING OVERLAY ============ -->
+  <div class="onboarding-overlay" id="onboardingOverlay" style="display:none;">
+    <div class="onboarding-container">
+      <!-- Step 1: Choose Path -->
+      <div class="onboarding-step" id="onboardingStep1">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Create Your First Character</h1>
+          <p class="onboarding-subtitle">Choose how you'd like to get started</p>
+        </div>
+        <div class="onboarding-cards">
+          <div class="onboarding-path-card" onclick="startOnboarding('create')">
+            <div class="onboarding-path-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6-6.3 4.6 2.3-7-6-4.6h7.6z"/>
+              </svg>
+            </div>
+            <h3>Create Character</h3>
+            <p>Describe a character and AI generates portrait options</p>
+          </div>
+          <div class="onboarding-path-card" onclick="startOnboarding('clone')">
+            <div class="onboarding-path-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <h3>Clone Yourself</h3>
+            <p>Upload selfie photos and AI creates a digital likeness</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Input -->
+      <div class="onboarding-step" id="onboardingStep2" style="display:none;">
+        <button class="onboarding-back" onclick="showOnboardingStep(1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div class="onboarding-header">
+          <h1 class="onboarding-title" id="onboardingStep2Title">Describe Your Character</h1>
+          <p class="onboarding-subtitle" id="onboardingStep2Subtitle">Be detailed — include appearance, style, and aesthetic</p>
+        </div>
+        <!-- Create mode: textarea -->
+        <div id="onboardingCreateInput">
+          <textarea class="onboarding-textarea" id="onboardingDescription" placeholder="A confident woman with long dark hair, olive skin, wearing a sleek black dress. She has striking green eyes and an elegant, fashion-forward aesthetic. Studio quality, 8K, professional lighting."></textarea>
+        </div>
+        <!-- Clone mode: upload zone -->
+        <div id="onboardingCloneInput" style="display:none;">
+          <div class="onboarding-upload-zone" id="onboardingUploadZone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Drag & drop selfie photos here</p>
+            <span>or click to browse (1-3 photos)</span>
+            <input type="file" id="onboardingFileInput" accept="image/*" multiple style="display:none;">
+          </div>
+          <div class="onboarding-upload-previews" id="onboardingUploadPreviews"></div>
+        </div>
+        <button class="btn btn-primary onboarding-action-btn" id="onboardingGenerateBtn" onclick="generateOnboardingImages()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6-6.3 4.6 2.3-7-6-4.6h7.6z"/>
+          </svg>
+          Generate Portraits (1 credit)
+        </button>
+      </div>
+
+      <!-- Step 3: Image Selection -->
+      <div class="onboarding-step" id="onboardingStep3" style="display:none;">
+        <button class="onboarding-back" onclick="showOnboardingStep(2)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Choose Your Portrait</h1>
+          <p class="onboarding-subtitle">Select the image that best represents your character</p>
+        </div>
+        <div class="onboarding-progress-bar">
+          <div class="onboarding-progress-fill" id="onboardingProgressFill"></div>
+          <span class="onboarding-progress-text" id="onboardingProgressText">Generating...</span>
+        </div>
+        <div class="onboarding-image-grid" id="onboardingImageGrid">
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+          <div class="onboarding-image-cell loading"><div class="onboarding-spinner"></div></div>
+        </div>
+        <div class="onboarding-image-actions">
+          <button class="btn onboarding-secondary-btn" id="onboardingGenerateMoreBtn" onclick="generateMoreOnboarding()">
+            Generate More (1 credit)
+          </button>
+          <button class="btn btn-primary onboarding-action-btn" id="onboardingUseSelectedBtn" onclick="confirmOnboardingImage()" disabled>
+            Use Selected
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4: Voice Selection -->
+      <div class="onboarding-step" id="onboardingStep4" style="display:none;">
+        <button class="onboarding-back" onclick="showOnboardingStep(3)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Choose a Voice</h1>
+          <p class="onboarding-subtitle">Select a voice for your character (optional)</p>
+        </div>
+        <div class="onboarding-voice-section">
+          <select class="input-select onboarding-voice-select" id="onboardingVoiceSelect">
+            <option value="">Loading voices...</option>
+          </select>
+          <button class="btn onboarding-secondary-btn" id="onboardingVoicePreviewBtn" onclick="previewOnboardingVoice()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Preview
+          </button>
+        </div>
+        <p class="onboarding-voice-hint" id="onboardingVoiceHint"></p>
+        <div class="onboarding-voice-actions">
+          <button class="btn onboarding-secondary-btn" onclick="skipOnboardingVoice()">Skip</button>
+          <button class="btn btn-primary onboarding-action-btn" onclick="confirmOnboardingVoice()">
+            Use This Voice
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 5: Name & Finish -->
+      <div class="onboarding-step" id="onboardingStep5" style="display:none;">
+        <button class="onboarding-back" onclick="showOnboardingStep(4)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Name Your Character</h1>
+          <p class="onboarding-subtitle">Give your character an identity</p>
+        </div>
+        <div class="onboarding-finish-preview">
+          <img id="onboardingFinishImage" class="onboarding-finish-img" src="" alt="Selected portrait">
+          <input type="text" class="onboarding-name-input" id="onboardingNameInput" placeholder="Character name..." maxlength="100">
+        </div>
+        <button class="btn btn-primary onboarding-action-btn onboarding-finish-btn" id="onboardingFinishBtn" onclick="finalizeOnboarding()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Finish Setup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Agent Chat Panel -->
+  <button class="master-agent-fab" id="masterAgentFab" onclick="toggleMasterAgent()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+    <span class="master-agent-fab-label">Loki Agent</span>
+  </button>
+  <div class="master-agent-panel" id="masterAgentPanel" style="display:none;">
+    <div class="master-agent-header">
+      <div class="master-agent-header-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Loki Agent</span>
+      </div>
+      <div class="master-agent-header-right">
+        <button class="agent-voice-toggle" id="agentVoiceToggle" onclick="toggleAgentVoice()" title="Toggle voice responses">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+        </button>
+        <button class="master-agent-close" onclick="toggleMasterAgent()">&times;</button>
+      </div>
+    </div>
+    <div class="master-agent-messages" id="masterAgentMessages">
+      <div class="agent-msg agent-msg-agent">
+        <div class="agent-msg-bubble">Hey! I'm your Loki Agent. I can help you manage characters, run pipelines, update schedules, and more. Talk or type — what would you like to do?</div>
+      </div>
+    </div>
+    <div class="master-agent-thinking" id="masterAgentThinking" style="display:none;">
+      <div class="agent-thinking-dots"><span></span><span></span><span></span></div>
+      <span>Thinking...</span>
+    </div>
+    <!-- Voice recording indicator -->
+    <div class="agent-voice-recording" id="agentVoiceRecording" style="display:none;">
+      <div class="voice-recording-pulse"></div>
+      <span>Listening...</span>
+      <button class="voice-recording-stop" onclick="stopVoiceRecording()">Stop</button>
+    </div>
+    <div class="master-agent-input">
+      <button class="agent-mic-btn" id="agentMicBtn" onclick="toggleVoiceRecording()" title="Hold to talk, or click to toggle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+          <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+      <textarea id="masterAgentInput" class="master-agent-textarea" placeholder="Ask me anything..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMasterAgentMessage();}"></textarea>
+      <button class="master-agent-send" onclick="sendMasterAgentMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatted@3/min.js"></script>
+  <script src="workflow-editor.js?v=1"></script>
+  <script src="app.js?v=31"></script>
+</body>
+
+</html>

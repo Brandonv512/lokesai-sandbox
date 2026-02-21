@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loki AI - Login</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='none' stroke='%23c6a664' stroke-width='1.5'/%3E%3Cpath d='M6 20 C10 8,14 22,16 14 S22 6,26 16' stroke='%23c6a664' stroke-width='2.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #000000;
+      --bg-card: rgba(20, 16, 8, 0.45);
+      --bg-input: rgba(10, 8, 4, 0.7);
+      --border: rgba(198, 166, 100, 0.14);
+      --border-focus: rgba(198, 166, 100, 0.5);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.5);
+      --text-tertiary: rgba(255, 255, 255, 0.25);
+      --accent-gold: #c6a664;
+      --accent-gold-light: #e5c98d;
+      --accent-gold-dark: #8c7335;
+      --accent-red: #f43f5e;
+      --accent-cyan: #00e5a0;
+      --accent-cyan-light: #33ffbd;
+      --accent-neon: #00d4ff;
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --font-heading: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── 1. Aurora Mesh Background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(198,166,100,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(0,229,160,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 30% at 50% 20%, rgba(0,212,255,0.05) 0%, transparent 70%);
+      background-size: 200% 200%;
+      animation: auroraDrift 12s ease-in-out infinite alternate;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes auroraDrift {
+      0%   { background-position: 0% 0%, 100% 100%, 50% 0%; }
+      25%  { background-position: 30% 20%, 70% 80%, 60% 30%; }
+      50%  { background-position: 60% 40%, 40% 60%, 45% 50%; }
+      75%  { background-position: 80% 20%, 20% 90%, 55% 20%; }
+      100% { background-position: 100% 50%, 0% 50%, 50% 70%; }
+    }
+
+    canvas#bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 0 20px;
+    }
+
+    /* ── 2. Floating Glass Panel ── */
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(24px) saturate(1.8) brightness(0.9);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(0.9);
+      padding: 40px 32px;
+      box-shadow:
+        0 8px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(198,166,100,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      border-image: linear-gradient(
+        135deg,
+        rgba(198,166,100,0.25),
+        rgba(0,229,160,0.1),
+        rgba(198,166,100,0.25)
+      ) 1;
+      border-image-slice: 1;
+      animation: cardFloat 6s var(--ease-cinematic) infinite, cardEntrance 0.8s var(--ease-cinematic) both;
+    }
+
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    @keyframes cardEntrance {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    .login-logo svg {
+      filter: drop-shadow(0 0 12px rgba(198, 166, 100, 0.4));
+    }
+
+    .login-brand {
+      text-align: center;
+    }
+
+    .login-brand h1 {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-gold-light), var(--accent-gold), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-brand p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .login-header h2 {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 20px;
+      color: var(--text-primary);
+    }
+
+    .login-header p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    /* ── 7. Typing Animation on Subtitle ── */
+    .typing-anim {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--accent-gold);
+      width: 0;
+      animation:
+        typeReveal 2.2s var(--ease-cinematic) 0.6s forwards,
+        blinkCaret 0.7s step-end infinite;
+    }
+
+    @keyframes typeReveal {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+
+    @keyframes blinkCaret {
+      0%, 100% { border-color: var(--accent-gold); }
+      50%      { border-color: transparent; }
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── 3. Neon Underline Focus Effect ── */
+    .form-group {
+      position: relative;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      transition:
+        border-color 0.3s var(--ease-cinematic),
+        background 0.3s var(--ease-cinematic),
+        box-shadow 0.3s var(--ease-cinematic);
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent-gold);
+      border-bottom-color: var(--accent-cyan);
+      border-image: none;
+      border-bottom: 2px solid transparent;
+      border-image: linear-gradient(90deg, var(--accent-gold), var(--accent-cyan)) 1;
+      border-image-slice: 0 0 1 0;
+      background: rgba(10, 8, 4, 0.9);
+      box-shadow:
+        0 4px 16px rgba(0, 229, 160, 0.08),
+        0 1px 0 rgba(198, 166, 100, 0.15);
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .form-error {
+      display: none;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: var(--accent-red);
+      margin-bottom: 16px;
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    /* ── 4. Submit Button Energy Fill ── */
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(
+        90deg,
+        var(--accent-gold) 0%,
+        var(--accent-gold-light) 25%,
+        var(--accent-cyan) 50%,
+        var(--accent-gold-light) 75%,
+        var(--accent-gold) 100%
+      );
+      background-size: 200% 100%;
+      background-position: 0% 0%;
+      color: #000;
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition:
+        background-position 0.6s var(--ease-cinematic),
+        box-shadow 0.4s var(--ease-cinematic),
+        transform 0.3s var(--ease-spring);
+      margin-top: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover {
+      background-position: 100% 0%;
+      box-shadow:
+        0 4px 20px rgba(198, 166, 100, 0.45),
+        0 0 40px rgba(0, 229, 160, 0.15),
+        0 0 80px rgba(198, 166, 100, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0px) scale(0.99);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      background-position: 0% 0%;
+      box-shadow: none;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+
+    /* ── 5. Google OAuth Button Glass Morphism ── */
+    .btn-google {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition:
+        border-color 0.3s var(--ease-cinematic),
+        background 0.3s var(--ease-cinematic),
+        box-shadow 0.3s var(--ease-cinematic),
+        transform 0.3s var(--ease-spring);
+    }
+
+    .btn-google:hover {
+      border-color: rgba(198, 166, 100, 0.35);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow:
+        0 0 20px rgba(198, 166, 100, 0.08),
+        0 0 0 1px rgba(198, 166, 100, 0.12);
+      transform: scale(1.01);
+    }
+
+    .btn-google svg {
+      width: 18px;
+      height: 18px;
+      transition: filter 0.3s var(--ease-cinematic);
+    }
+
+    .btn-google:hover svg {
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+    }
+
+    .login-switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .login-switch a {
+      color: var(--accent-gold);
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .login-switch a:hover {
+      color: var(--accent-gold-light);
+    }
+
+    .plans-preview {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .plans-preview h3 {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .plan-chips {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    /* ── 6. Plan Chips Holographic Shimmer ── */
+    .plan-chip {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: rgba(198, 166, 100, 0.08);
+      border: 1px solid rgba(198, 166, 100, 0.15);
+      color: var(--accent-gold);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .plan-chip::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(198,166,100,0.15), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .plan-chip:nth-child(2)::before {
+      animation-delay: 0.5s;
+    }
+
+    .plan-chip:nth-child(3)::before {
+      animation-delay: 1s;
+    }
+
+    @keyframes shimmer {
+      0%   { left: -100%; }
+      60%  { left: 100%; }
+      100% { left: 100%; }
+    }
+
+    /* ── 8. Staggered Entrance Animations ── */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stagger-1 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.15s both;
+    }
+
+    .stagger-2 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.3s both;
+    }
+
+    .stagger-3 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.45s both;
+    }
+
+    .stagger-4 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.6s both;
+    }
+
+    .stagger-5 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.75s both;
+    }
+
+    .stagger-6 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 0.9s both;
+    }
+
+    .stagger-7 {
+      opacity: 0;
+      animation: fadeSlideUp 0.6s var(--ease-cinematic) 1.05s both;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header stagger-1">
+        <div class="login-logo">
+          <svg width="42" height="42" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#e5c98d"/>
+                <stop offset="30%" stop-color="#c6a664"/>
+                <stop offset="60%" stop-color="#b8923e"/>
+                <stop offset="100%" stop-color="#8c7335"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="54" stroke="url(#logoGold)" stroke-width="1.5" fill="none" opacity="0.4"/>
+            <path d="M18 65 C30 30, 45 75, 60 50 S85 25, 102 55" stroke="url(#logoGold)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <path d="M22 78 C38 58, 55 85, 72 62 S92 45, 98 68" stroke="url(#logoGold)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="login-brand">
+          <h1>Loki AI</h1>
+          <p>Generator</p>
+        </div>
+        <h2 id="formTitle">Sign In</h2>
+        <p id="formSubtitle"><span class="typing-anim">Welcome back. Enter your credentials.</span></p>
+      </div>
+
+      <div class="form-error stagger-2" id="formError"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="return handleLogin(event)">
+        <div class="form-group hidden" id="nameGroup">
+          <label for="nameInput">Name</label>
+          <input type="text" id="nameInput" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="form-group stagger-2">
+          <label for="emailInput">Email</label>
+          <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <div class="form-group stagger-3">
+          <label for="passwordInput">Password</label>
+          <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="current-password" required minlength="6">
+        </div>
+        <button type="submit" class="btn-submit stagger-4" id="submitBtn">Sign In</button>
+      </form>
+
+      <div class="divider stagger-5"><span>or</span></div>
+
+      <button class="btn-google stagger-5" onclick="window.location.href='/auth/google'">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </button>
+
+      <div class="login-switch stagger-6">
+        <span id="switchText">Don't have an account?</span>
+        <a id="switchLink" onclick="toggleMode()">Create one</a>
+      </div>
+
+      <div class="plans-preview stagger-7">
+        <h3>Available Plans</h3>
+        <div class="plan-chips">
+          <span class="plan-chip">Starter $29/mo</span>
+          <span class="plan-chip">Pro $49/mo</span>
+          <span class="plan-chip">Premium $79/mo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle OAuth callback fragments: #token=...&user=...
+    (function() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) return;
+      const params = new URLSearchParams(hash);
+
+      if (params.has('token') && params.has('user')) {
+        const token = params.get('token');
+        const user = JSON.parse(decodeURIComponent(params.get('user')));
+        localStorage.setItem('saas_token', token);
+        localStorage.setItem('saas_user', JSON.stringify(user));
+        window.location.href = '/';
+        return;
+      }
+
+      if (params.has('error')) {
+        const errMap = {
+          invalid_state: 'Authentication session expired. Please try again.',
+          token_exchange_failed: 'Google authentication failed. Please try again.',
+          profile_fetch_failed: 'Could not retrieve your Google profile.',
+          server_error: 'Server error during authentication.',
+        };
+        const errCode = params.get('error');
+        showError(errMap[errCode] || 'Authentication error: ' + errCode);
+      }
+
+      history.replaceState(null, '', '/login');
+    })();
+
+    // Redirect if already logged in
+    if (localStorage.getItem('saas_token')) {
+      window.location.href = '/';
+    }
+
+    let isSignup = false;
+
+    function toggleMode() {
+      isSignup = !isSignup;
+      document.getElementById('formTitle').textContent = isSignup ? 'Create Account' : 'Sign In';
+      var subtitleText = isSignup
+        ? 'Start your free Starter plan today.'
+        : 'Welcome back. Enter your credentials.';
+      var subtitleEl = document.getElementById('formSubtitle');
+      subtitleEl.innerHTML = '<span class="typing-anim" style="animation: typeReveal 2.2s var(--ease-cinematic) 0s forwards, blinkCaret 0.7s step-end infinite;">' + subtitleText + '</span>';
+      document.getElementById('nameGroup').classList.toggle('hidden', !isSignup);
+      document.getElementById('submitBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.getElementById('switchText').textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('switchLink').textContent = isSignup ? 'Sign in' : 'Create one';
+      document.getElementById('passwordInput').autocomplete = isSignup ? 'new-password' : 'current-password';
+      hideError();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('formError');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    function hideError() {
+      document.getElementById('formError').classList.remove('visible');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = isSignup ? 'Creating...' : 'Signing in...';
+
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const name = document.getElementById('nameInput').value.trim();
+
+      try {
+        const endpoint = isSignup ? '/auth/signup' : '/auth/login';
+        const body = isSignup ? { email, password, name } : { email, password };
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showError(data.error || 'Something went wrong');
+          return;
+        }
+        localStorage.setItem('saas_token', data.token);
+        localStorage.setItem('saas_user', JSON.stringify(data.user));
+        window.location.href = '/';
+      } catch (err) {
+        showError('Network error. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = isSignup ? 'Create Account' : 'Sign In';
+      }
+    }
+
+    // Minimal background animation (same orbs as main dashboard)
+    (function initBg() {
+      const canvas = document.getElementById('bgCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const orbColors = [
+        'rgba(198, 166, 100, 0.04)',
+        'rgba(229, 201, 141, 0.03)',
+        'rgba(2, 75, 85, 0.05)',
+        'rgba(198, 166, 100, 0.025)',
+      ];
+      function sr(seed) { const x = Math.sin(seed) * 10000; return x - Math.floor(x); }
+      const orbs = Array.from({ length: 4 }, (_, i) => ({
+        x: sr(77 + i * 17) * 80 + 10, y: sr(77 + i * 23) * 80 + 10,
+        size: 200 + sr(77 + i * 31) * 350, color: orbColors[i],
+        speed: 0.2 + sr(77 + i * 41) * 0.4, phase: sr(77 + i * 53) * Math.PI * 2,
+      }));
+
+      function animate(t) {
+        const time = t / 1000;
+        ctx.clearRect(0, 0, w, h);
+        orbs.forEach(orb => {
+          const ox = (orb.x + Math.sin(time * orb.speed + orb.phase) * 30) / 100 * w;
+          const oy = (orb.y + Math.cos(time * orb.speed * 0.7 + orb.phase) * 20) / 100 * h;
+          const os = orb.size * (0.85 + (Math.sin(time * orb.speed * 0.5 + orb.phase) + 1) * 0.15);
+          const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, os);
+          grad.addColorStop(0, orb.color);
+          grad.addColorStop(0.7, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.fillRect(ox - os, oy - os, os * 2, os * 2);
+        });
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "lowkie-ai-remotion",
+  "version": "1.0.0",
+  "description": "Remotion compositions for Lowkie AI dashboard cinematic animations",
+  "scripts": {
+    "studio": "npx remotion studio",
+    "render-logo": "npx remotion render src/index.ts LowkieLogoReveal ../assets/video/logo-reveal.webm --codec=vp8",
+    "render-orbs": "npx remotion render src/index.ts LoadingOrbs ../assets/video/loading-orbs.webm --codec=vp8",
+    "render-divider": "npx remotion render src/index.ts SectionDivider ../assets/video/section-divider.webm --codec=vp8",
+    "render-pulse-ring": "npx remotion render src/index.ts GeneratingPulseRing ../assets/video/generating-pulse-ring.webm --codec=vp8",
+    "render-pipeline": "npx remotion render src/index.ts PipelineFlow ../assets/video/pipeline-flow.webm --codec=vp8",
+    "render-background": "npx remotion render src/index.ts CinematicBackground ../assets/video/cinematic-background.webm --codec=vp8",
+    "render-card": "npx remotion render src/index.ts CardReveal ../assets/video/card-reveal.webm --codec=vp8",
+    "render-all": "npm run render-logo && npm run render-orbs && npm run render-divider && npm run render-pulse-ring && npm run render-pipeline && npm run render-background && npm run render-card"
+  },
+  "dependencies": {
+    "remotion": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/react": "^18.0.0"
+  }
+}

@@ -1,0 +1,1805 @@
+{
+  "updatedAt": "2026-02-11T16:50:33.105Z",
+  "createdAt": "2026-02-11T11:13:21.170Z",
+  "id": "72EXSrxJ5IckthuP",
+  "name": "Client # 1 Brandon | Video Creation One character",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Prompt\": \"front shot of cenimatic....\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2512,
+        624
+      ],
+      "id": "30b35acc-15ab-491b-9dca-4f1e9b48ec7f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "7700134015",
+        "message": "above is the video generated upon your request Brandon. Please Approve, Reject or Cancel\n",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Approve | Remake | Abandon",
+              "fieldType": "dropdown",
+              "defaultValue": "Approve",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approve"
+                  },
+                  {
+                    "option": "Remake"
+                  },
+                  {
+                    "option": "Abandon"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Suggestions to edit",
+              "placeholder": "Please write what you'd like changed",
+              "defaultValue": "Nothing"
+            }
+          ]
+        },
+        "options": {
+          "messageButtonLabel": "Click here to respond",
+          "responseFormTitle": "Video Approval Form",
+          "responseFormDescription": "Hi Brandon, please approve or reject the video you saw",
+          "responseFormButtonLabel": "Continue",
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        640
+      ],
+      "id": "2f30bd4e-6637-4998-b944-0af90968428e",
+      "name": "Ask For Approval",
+      "webhookId": "d9f5ad0e-dbab-48a9-a485-0deaa652b5c4",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITUv2dmAK5CrcRTW",
+          "name": "Brandon Telegram Interface"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data['Approve | Remake | Abandon'] }}",
+                    "rightValue": "Remake",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b8c80473-dae9-4225-8d0d-c9cfb9336504"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Remake"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5971f779-f689-4c47-8460-b68811ca8ff5",
+                    "leftValue": "={{ $json.data['Approve | Remake | Abandon'] }}",
+                    "rightValue": "Approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approved"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5f888ba2-1ed3-401d-851b-9eeddcb6fa44",
+                    "leftValue": "={{ $json.data['Approve | Remake | Abandon'] }}",
+                    "rightValue": "Abandon",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Abandon"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        624
+      ],
+      "id": "060d26b0-be1b-4571-bdd5-b5cac8228d3e",
+      "name": "Approval Switch"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "7700134015",
+        "file": "={{ $json.VideoURL }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        640
+      ],
+      "id": "4901b579-346e-4693-b800-42f81d300607",
+      "name": "Upload Video",
+      "webhookId": "8f53740a-0149-4b64-a131-480574b4fc6d",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITUv2dmAK5CrcRTW",
+          "name": "Brandon Telegram Interface"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token || \"\" }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"snippet\": {\n    \"title\": \"AI Generated Short #{{ Math.floor(Math.random() * 10000) }}\",\n    \"description\": \"AI generated video content #shorts\",\n    \"tags\": [\"shorts\", \"ai\", \"generated\"],\n    \"categoryId\": \"22\"\n  },\n  \"status\": {\n    \"privacyStatus\": \"private\",\n    \"selfDeclaredMadeForKids\": false\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        640
+      ],
+      "id": "ce6c1a90-7731-4a66-bb83-a308b7486cbd",
+      "name": "YouTube Upload (Draft)"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are going to describe in great detail if at any point there is any full on nudity that would surely violate social media TOS. Edge of the line is fine, where there is technical nudity though things are revealing, but ensure that you can accurately describe if there is genitalia openly showing, your output will go into a a text classifier which will determine if this needs to be reviewed by a human or not",
+        "videoUrls": "={{ $json.VideoURL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        448
+      ],
+      "id": "094fd397-fab9-4ad3-a7de-6efcafce6e1c",
+      "name": "Analyze video",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "adEMCKx2Wma2nfeN",
+          "name": "Infozie Google LLM Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nano-banana-pro\",\n  \"input\": {\n    \"prompt\": \"{{ $json.output.Prompt }}\",\n    \"aspect_ratio\": \"9:16\",\n    \"image_input\": [\"{{ $('Edit Fields').item.json['Image URL'] }}\"],\n    \"resolution\": \"1K\",\n    \"output_format\": \"png\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -368,
+        -64
+      ],
+      "id": "82829cba-e2af-4663-ab4a-10443db58122",
+      "name": "Nano Banana Image Generation",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ym3AaxDoep9wbxAT",
+          "name": "Ahmed's Kei AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "237a32b0-26ac-488e-9ec9-d9bc857c763f",
+      "name": "Check if the image is ready",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ym3AaxDoep9wbxAT",
+          "name": "Ahmed's Kei AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Prompt\": \"A man dressed like this and looks like this and is sitting here and this is what he is doing and this is the atomophere and this is the theme\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "3963e084-f2ee-46b1-8071-fce6c2c628dd",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a simple one sentence prompt to animate the image given doing the following action\n\n: {{ $('Selected Action').item.json.Action }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Given the instructions in the Users prompt, and a reference image, you job would be to prompt Wan2.6 to animate the given action within the users prompt."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -2512,
+        416
+      ],
+      "id": "b40393a3-df28-49a1-bce1-255017a97517",
+      "name": "Video Prompt Generator"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3333/n8n-data/actions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2080,
+        -64
+      ],
+      "id": "107f1b7b-1161-4c19-af59-be83f6812fa8",
+      "name": "Actions",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Actions"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        -64
+      ],
+      "id": "a90e36cd-c339-44e7-b95e-6cfe603ac1c8",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "model": "claude-3-opus-20240229",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        112
+      ],
+      "id": "b205c4cc-0415-4a39-8efb-8b581089c41d",
+      "name": "Claude Opus Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "mYXoswfq7a60eKFo",
+          "name": "Brandon Claude Opus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Base Prompt: huge breast eastern European woman fit viking girl huge boobs,young model fit with massive large breast and under boob showing visible abs with shoulder armor and armlets wearing tiny micro bikini, tan lines , add weird details to make it seem not ai nothing too perfect, tanning oil on abs and body they need some differences in outfits and hair style ect very very tiny bikini top with lots of cleavage showing, visible abs, iphone quality less professional under boob showing side boobs showing.Do not show the Iphone\n\n------------------\n\nNew Prompt : {{ $('Selected Prompt').item.json.Prompt }}\n\n------------------\n\nAction :{{ $('Selected Action').item.json.Action }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert prompt creator which follows intrctions very well but very carefully ensuring and double chekcing you're not messing up.\n\nYou will be given \n- Base Prompt\n- New Prompt (Will include what types of settings/clothes)\n- an Action\n\nYou job will be to Alter the base prompt to fit the new prompt and action but keep the rest of the prompt the same. Do not make any other major changes to either the structure OR the wordings of the prompts except where important to add the variations and action.\nEnsure places where purposefully reveaeling clothing is mentioned stays\n\nonly output the prompt and ensure it does not have an quotations marks etc so it dosnt break json request via API to Nano banana\n\nEnsure that you explicitly state that no iphone should actually be visible , and Full body is visible."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -688,
+        -64
+      ],
+      "id": "dadf2316-d28e-430a-9c15-4fb837a416bc",
+      "name": "Photo Prompt Generator",
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -176,
+        -64
+      ],
+      "id": "c9ad99e8-6c18-4c54-bf3f-8a325a9b3a23",
+      "name": "Wait for image",
+      "webhookId": "4ef0bb79-30da-4f2d-b861-ed93d093ac03"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.failCode }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "b8c80473-dae9-4225-8d0d-c9cfb9336504"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5971f779-f689-4c47-8460-b68811ca8ff5",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "waiting",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Polling"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d68074f0-1b7b-4502-bde7-a98745fc07f6",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Success"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 0
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        -80
+      ],
+      "id": "1e0a4911-ed34-4d4f-abda-6b5fa8afb257",
+      "name": "Image Creation Checker"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1259864-8898-4925-a1b5-2189b9162737",
+              "name": "VideoURL",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        128
+      ],
+      "id": "84983c02-ef67-40d8-9eb5-2af031564efa",
+      "name": "Image URL Cleaner"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"wan/2-6-image-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $node[\"Video Prompt Generator\"].json.output.Prompt }},Realistic body physics and jiggle, slowmotion, animated face with social expressions, hair motion. exaggerated breast jiggle, Sensual Music\",\n    \"image_urls\": [\n      \"{{ $('Image URL Cleaner').item.json.VideoURL }}\"\n    ],\n    \"duration\": \"5\",\n    \"resolution\": \"1080p\",\n    \"multi_shots\": false\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2176,
+        416
+      ],
+      "id": "6fa67d16-559c-4399-86cf-18e86cc6387f",
+      "name": "Wan 2.6 Video Generator",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ym3AaxDoep9wbxAT",
+          "name": "Ahmed's Kei AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1968,
+        416
+      ],
+      "id": "5cbdfac1-7926-4cbd-b154-ef08f636ce41",
+      "name": "Wait for Video",
+      "webhookId": "2e8345ad-fb18-46f0-858a-5a77f4e70b9e"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1760,
+        416
+      ],
+      "id": "a6d7084b-4f1a-4f58-aae5-6b26868311d1",
+      "name": "Check on Video Generation",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ym3AaxDoep9wbxAT",
+          "name": "Ahmed's Kei AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.failCode }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "b8c80473-dae9-4225-8d0d-c9cfb9336504"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5971f779-f689-4c47-8460-b68811ca8ff5",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "generating",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Polling"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d68074f0-1b7b-4502-bde7-a98745fc07f6",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Success"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 1
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1504,
+        400
+      ],
+      "id": "d5d8969a-36be-40b6-ab3c-ff1518281697",
+      "name": "Video Generation Check"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1259864-8898-4925-a1b5-2189b9162737",
+              "name": "VideoURL",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1232,
+        448
+      ],
+      "id": "94bf5264-4ad4-483e-b503-3bef1e99183a",
+      "name": "Clean Video URL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43f0ed67-46b5-4f1f-9ffd-2588e8355cb2",
+              "leftValue": "={{ $json.finishReason }}",
+              "rightValue": "CONTENT_PROHIBITED",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -704,
+        448
+      ],
+      "id": "6e513eac-d71e-49e4-bad4-266df3bf8eac",
+      "name": "\"Content Prohibited\" Check"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.content.parts[0].text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Violating TOS of Platform | Needs Approval | Unsure",
+              "description": "When the above description explicitly states that full on genitalia is visible and it is Sure that this violates TOS. If you are unsure then you can also use this classification, better safe than sorry."
+            },
+            {
+              "category": "Green Signal",
+              "description": "NO actual Nudity is present, though it may be close but technically everything is Covered and okay"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json.\n\nYou will be classifying Descriptions of videos given to you. These will typically be of women who are wearing extremely revealing clothes, it will be up to you to decide what is full on nudity and what is acceptable, based on the guidelines given."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        432
+      ],
+      "id": "6fb2ec4c-a1ed-41b8-9ea0-ef205094ba3c",
+      "name": "Policy Checking Validator"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 06 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 09 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 12 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 21 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 00 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2304,
+        0
+      ],
+      "id": "30a0165a-ed87-463b-ab92-05c3268f90b0",
+      "name": "6 Times a day poster"
+    },
+    {
+      "parameters": {
+        "content": "## Video Generation\n",
+        "height": 432,
+        "width": 1248,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        352
+      ],
+      "id": "52bfcc1f-5206-484a-8cc2-b548d1d910e2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Image Generation\n",
+        "height": 400,
+        "width": 1312,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -144
+      ],
+      "id": "4bddff7b-7ee7-412b-8f30-72b386d7ab47",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Avatar Attributes\n",
+        "height": 240,
+        "width": 448,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        -144
+      ],
+      "id": "8e5f7d68-3e4f-4cf5-87fa-02bb45c43e94",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Video Regulation and Approval\n",
+        "height": 480,
+        "width": 1552,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        352
+      ],
+      "id": "0661fc03-87d1-4fe2-81fb-1a642b95fa5a",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Prompt: {{ $('Video Prompt Generator').item.json.output.Prompt }}\n\nInstructionsto change : {{ $json.data['Suggestions to edit'] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a prompt corrector Agent. You'll be given  a prompt and the instructions from the user on what to add/ change. You'll change the prompt accordingly while keeping most of the prompt same. Remove and clashing information . The prompt will be going into a video generation model like Wan 2.6 and is already optimized by another agent."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        80,
+        432
+      ],
+      "id": "d8cbfd72-d150-4b87-ad05-1124f291c06d",
+      "name": "Recreating Prompt and Video LLM"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Base Prompt (aggrigated): huge breast eastern European woman fit viking girl huge boobs young model fit with massive large breast and under boob showing visible abs with shoulder armor and armlets wearing tiny micro bikini, tan lines , add weird details to make it seem not ai nothing too perfect, tanning oil on abs and body they need some differences in outfits and hair style ect very very tiny bikini top with lots of cleavage showing, visible abs, iphone quality less professional under boob showing side boobs showing.\n------------------\n\nNew Prompt and action : {{ $('Telegram Trigger').item.json.message.text }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert prompt creator which follows intrctions very well but very carefully ensuring and double chekcing you're not messing up.\n\nYou will be given \n- A few base prompt(s)\n- Another prompt that you'll need to INCORPORATE into the base prompt smoothly so that there are no clashes\n\nYou job will be to Alter the base prompt to fit the NEW Prompts(containg details from the NEW prompt) and NEW action but keep the rest of the prompt the same. Do not make any other major changes to either the structure OR the wordings of the prompts except where important to add the variations and action.\n\nonly output the prompt and ensure it does not have an quotations marks etc so it dosnt break json request via API to Nano banana\n\nEnsure that you explicitly sate that no iphone should actually be visible."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -688,
+        -384
+      ],
+      "id": "b058119e-9cf9-4694-bad3-596ff8605e03",
+      "name": "Telegram Input Character Generation LLM",
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "7700134015",
+          "userIds": ""
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1376,
+        -384
+      ],
+      "id": "577d161d-3e58-43e7-b444-c9a603063a72",
+      "name": "Telegram Trigger",
+      "webhookId": "51302fcb-d487-413a-b9c4-d87b391537e7",
+      "credentials": {
+        "telegramApi": {
+          "id": "ITUv2dmAK5CrcRTW",
+          "name": "Brandon Telegram Interface"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3333/n8n-data/prompts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1200,
+        -384
+      ],
+      "id": "3ad1386e-bb4d-4cab-88fe-f53e24f9c6a1",
+      "name": "Main Prompt1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Prompts"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        -384
+      ],
+      "id": "f0c1341d-16df-4dcc-91f5-acfc4aef38fd",
+      "name": "Aggregate2",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "model": "claude-3-opus-20240229",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        704
+      ],
+      "id": "cd686edc-b7dc-4b06-941b-53577b61f510",
+      "name": "Claude Opus Brain",
+      "credentials": {
+        "anthropicApi": {
+          "id": "mYXoswfq7a60eKFo",
+          "name": "Brandon Claude Opus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Custom Avatar Prompter\n",
+        "height": 240,
+        "width": 1008,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        -448
+      ],
+      "id": "b94e6348-2b5c-40a6-bbca-6237be29b918",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Credentials Needed\n* Google (Excel)\n- telegram\n- Any LLM\n- Kie.ai\n- Gemini\n- X\n- Instagram\n- Youtube\n- Tiktok\n- Post Scheduler (if needed)",
+        "height": 272,
+        "width": 496,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        -512
+      ],
+      "id": "b6d055c8-883d-44c5-957d-f42ae6ff75f2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### Change with Social media uploader\n",
+        "height": 176,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        592
+      ],
+      "id": "916fffc7-63f2-4bb0-a491-c5194556f90e",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3333/n8n-data/scenes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1520,
+        -64
+      ],
+      "id": "cde628a6-8936-4951-9a73-1e8d2a0438dc",
+      "name": "Actions1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Prompt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -64
+      ],
+      "id": "349c690b-9f60-4328-a453-a1f8fd1bbdd7",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "content": "## Avatar Setting\n",
+        "height": 240,
+        "width": 448,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        -144
+      ],
+      "id": "3abf502a-f162-48ac-908e-a09b0403dc59",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.Prompt;\n\nif (!Array.isArray(data) || data.length === 0) {\n  throw new Error('No \"Actions\" array found (check the key name)');\n}\n\nconst randomIndex = Math.floor(Math.random() * data.length);\n\nreturn [\n  {\n    json: {\n      Prompt: data[randomIndex]\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        -64
+      ],
+      "id": "f0bd2cc6-7209-41f2-a30f-aea76617bf35",
+      "name": "Selected Prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.Actions;\n\nif (!Array.isArray(data) || data.length === 0) {\n  throw new Error('No \"Actions\" array found (check the key name)');\n}\n\nconst randomIndex = Math.floor(Math.random() * data.length);\n\nreturn [\n  {\n    json: {\n      Action: data[randomIndex]\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        -64
+      ],
+      "id": "c50200f6-75f8-4e71-992d-7c5080db289e",
+      "name": "Selected Action"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f93eede-bcec-412e-a268-55b9b1f43149",
+              "name": "Image URL",
+              "value": "https://res.cloudinary.com/dxthotpnl/image/upload/v1770041171/thumb_7b0bb3af-f0ee-4b41-b1fc-de25324757c5_nb6kt8.png",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -912,
+        -64
+      ],
+      "id": "a5831f34-bae8-48cd-b7ee-17a282fb6f17",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2304,
+        -240
+      ],
+      "id": "278db6b3-c1e4-41b8-90e9-83391d6ce742",
+      "name": "When clicking \u2018Execute workflow\u2019"
+    },
+    {
+      "parameters": {
+        "model": "claude-3-opus-20240229",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1,
+      "position": [
+        368,
+        144
+      ],
+      "id": "1af262c7-6930-41e4-8d0d-baddd311148f",
+      "name": "Claude Opus Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "mYXoswfq7a60eKFo",
+          "name": "Brandon Claude Opus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Photo Prompt Generator').item.json.output.Prompt }}\n\nEdit the above prompt changing it extremly minimally trying to maintain the original prompt as much as possible. This prompt got rejected by nano banana, we are trying to change it as little as possible and have it accepted",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        368,
+        -96
+      ],
+      "id": "a2663d51-eccc-4c17-b8ff-5bb8949ff4c4",
+      "name": "Edit Prompt"
+    }
+  ],
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Video Prompt Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask For Approval": {
+      "main": [
+        [
+          {
+            "node": "Approval Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video": {
+      "main": [
+        [
+          {
+            "node": "Ask For Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval Switch": {
+      "main": [
+        [
+          {
+            "node": "Recreating Prompt and Video LLM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YouTube Upload (Draft)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Analyze video": {
+      "main": [
+        [
+          {
+            "node": "\"Content Prohibited\" Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nano Banana Image Generation": {
+      "main": [
+        [
+          {
+            "node": "Wait for image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Photo Prompt Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Telegram Input Character Generation LLM",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if the image is ready": {
+      "main": [
+        [
+          {
+            "node": "Image Creation Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt Generator": {
+      "main": [
+        [
+          {
+            "node": "Wan 2.6 Video Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actions": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Selected Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Photo Prompt Generator": {
+      "main": [
+        [
+          {
+            "node": "Nano Banana Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait for image": {
+      "main": [
+        [
+          {
+            "node": "Check if the image is ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Creation Checker": {
+      "main": [
+        [
+          {
+            "node": "Edit Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait for image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Image URL Cleaner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image URL Cleaner": {
+      "main": [
+        [
+          {
+            "node": "Video Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wan 2.6 Video Generator": {
+      "main": [
+        [
+          {
+            "node": "Wait for Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Video": {
+      "main": [
+        [
+          {
+            "node": "Check on Video Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check on Video Generation": {
+      "main": [
+        [
+          {
+            "node": "Video Generation Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Generation Check": {
+      "main": [
+        [
+          {
+            "node": "Wan 2.6 Video Generator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait for Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clean Video URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Video URL": {
+      "main": [
+        [
+          {
+            "node": "Analyze video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "\"Content Prohibited\" Check": {
+      "main": [
+        [
+          {
+            "node": "Policy Checking Validator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Policy Checking Validator": {
+      "main": [
+        [
+          {
+            "node": "Upload Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YouTube Upload (Draft)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recreating Prompt and Video LLM": {
+      "main": [
+        [
+          {
+            "node": "Wan 2.6 Video Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Input Character Generation LLM": {
+      "main": [
+        [
+          {
+            "node": "Nano Banana Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 Times a day poster": {
+      "main": [
+        [
+          {
+            "node": "Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Main Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Main Prompt1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Telegram Input Character Generation LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actions1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Selected Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selected Prompt": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selected Action": {
+      "main": [
+        [
+          {
+            "node": "Actions1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Photo Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \u2018Execute workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Prompt": {
+      "main": [
+        [
+          {
+            "node": "Nano Banana Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Opus Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Video Prompt Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Policy Checking Validator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Recreating Prompt and Video LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Opus Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Photo Prompt Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Telegram Input Character Generation LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Opus Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Edit Prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f55aedf38e9024c3182194bdac0731678d2105f4cf5e3c66bebc365396ef127f"
+  },
+  "pinData": {},
+  "versionId": "a30e68d4-3d65-4a15-a29c-23d5a6c12359",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-11T11:13:21.170Z",
+      "createdAt": "2026-02-11T11:13:21.170Z",
+      "role": "workflow:owner",
+      "workflowId": "72EXSrxJ5IckthuP",
+      "projectId": "PZWr5ce5E4UM6FyV",
+      "project": {
+        "updatedAt": "2026-02-11T11:05:02.376Z",
+        "createdAt": "2026-02-11T11:04:31.465Z",
+        "id": "PZWr5ce5E4UM6FyV",
+        "name": "Loki Admin <loki@local.dev>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "768ea8a0-09d8-4efc-885e-e6ec76fa6cab",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-11T11:04:31.465Z",
+            "createdAt": "2026-02-11T11:04:31.465Z",
+            "userId": "768ea8a0-09d8-4efc-885e-e6ec76fa6cab",
+            "projectId": "PZWr5ce5E4UM6FyV",
+            "user": {
+              "updatedAt": "2026-02-12T05:00:10.000Z",
+              "createdAt": "2026-02-11T11:04:31.401Z",
+              "id": "768ea8a0-09d8-4efc-885e-e6ec76fa6cab",
+              "email": "loki@local.dev",
+              "firstName": "Loki",
+              "lastName": "Admin",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-11T11:05:14.513Z",
+                "personalization_survey_n8n_version": "2.7.3"
+              },
+              "settings": {
+                "userActivated": false
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-11",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": null,
+  "scopes": [
+    "workflow:create",
+    "workflow:delete",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:update"
+  ],
+  "checksum": "7fe9b7b51af20f063187a6ea6a74f9fe7b570cc00fa74b9e2c2595e55e11bc5b"
+}

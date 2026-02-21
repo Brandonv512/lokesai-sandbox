@@ -1,0 +1,842 @@
+/* ============================================================
+   WORKFLOW EDITOR - Gold-themed Node-Based Workflow Editor CSS
+   Scoped under .workflow-editor | IDs prefixed with we-
+   Auto-generated from Freepik editor source
+   ============================================================ */
+
+
+/* ==================== RESET & BASE ==================== */
+.workflow-editor *, .workflow-editor *::before, .workflow-editor *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.workflow-editor {
+    --bg-canvas: #080806;
+    --bg-panel: #100e0a;
+    --bg-node: rgba(16, 14, 10, 0.9);
+    --bg-node-solid: #14120c;
+    --bg-input: #1a170e;
+    --bg-hover: #252014;
+    --bg-active: #2e2818;
+    --border: rgba(198, 166, 100, 0.08);
+    --border-light: rgba(198, 166, 100, 0.15);
+    --border-bright: rgba(198, 166, 100, 0.25);
+    --text: #c8c0b0;
+    --text-dim: #6e6858;
+    --text-bright: #f0e8d8;
+    --accent: #c6a664;
+    --accent-hover: #e5c98d;
+    --accent-glow: rgba(198, 166, 100, 0.3);
+    --green: #34d399;
+    --green-glow: rgba(52, 211, 153, 0.3);
+    --red: #f87171;
+    --red-glow: rgba(248, 113, 113, 0.3);
+    --orange: #fbbf24;
+    --orange-glow: rgba(251, 191, 36, 0.3);
+    --port-text: #fbbf24;
+    --port-image: #60a5fa;
+    --port-audio: #c084fc;
+    --port-video: #34d399;
+    --node-w: 240px;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --shadow-node: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+    --shadow-node-hover: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px var(--border-light);
+    --glass: blur(16px) saturate(1.2);
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg-canvas);
+    -webkit-font-smoothing: antialiased;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ==================== LAYOUT ==================== */
+.workflow-editor #we-app {
+    display: grid;
+    grid-template-rows: 48px 1fr;
+    grid-template-columns: 230px 1fr 300px;
+    grid-template-areas:
+        "toolbar toolbar toolbar"
+        "sidebar canvas props";
+    width: 100%; height: 100%;
+}
+
+/* ==================== TOOLBAR ==================== */
+.workflow-editor #we-toolbar {
+    grid-area: toolbar;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+}
+
+.workflow-editor .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 16px;
+    white-space: nowrap;
+}
+.workflow-editor .logo svg { flex-shrink: 0; }
+.workflow-editor .logo-text {
+    font-weight: 700;
+    font-size: 15px;
+    background: linear-gradient(135deg, #a78bfa, #7c5bf5, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.3px;
+}
+
+.workflow-editor .tb-sep { width: 1px; height: 24px; background: var(--border-light); margin: 0 6px; }
+
+.workflow-editor .tb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    line-height: 1;
+}
+.workflow-editor .tb-btn:hover { background: var(--bg-hover); border-color: var(--border-bright); color: var(--text-bright); }
+.workflow-editor .tb-btn:active { transform: scale(0.97); }
+.workflow-editor .tb-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.workflow-editor .tb-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.workflow-editor .tb-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); box-shadow: 0 0 12px var(--accent-glow); }
+.workflow-editor .tb-btn.danger { color: var(--red); }
+.workflow-editor .tb-btn.danger:hover { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); }
+
+.workflow-editor .tb-spacer { flex: 1; }
+
+.workflow-editor .zoom-display {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    min-width: 42px;
+    text-align: center;
+    padding: 4px 8px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+/* ==================== SIDEBAR ==================== */
+.workflow-editor #we-sidebar {
+    grid-area: sidebar;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.workflow-editor .section-title {
+    padding: 14px 16px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+}
+
+.workflow-editor .node-palette { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
+
+.workflow-editor .palette-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 2px;
+    border-radius: var(--radius-sm);
+    cursor: grab;
+    transition: all 0.15s ease;
+    user-select: none;
+    border: 1px solid transparent;
+}
+.workflow-editor .palette-item:hover { background: var(--bg-hover); border-color: var(--border); }
+.workflow-editor .palette-item:active { cursor: grabbing; transform: scale(0.98); }
+
+.workflow-editor .palette-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--border-light);
+}
+.workflow-editor .palette-icon svg { width: 18px; height: 18px; }
+
+.workflow-editor .palette-label { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+.workflow-editor .palette-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+.workflow-editor .workflow-list {
+    border-top: 1px solid var(--border);
+    padding: 4px 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.workflow-editor .wf-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+.workflow-editor .wf-item:hover { background: var(--bg-hover); border-color: var(--border); }
+.workflow-editor .wf-item .wf-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workflow-editor .wf-item .wf-del { opacity: 0; color: var(--red); cursor: pointer; padding: 2px 6px; font-size: 16px; font-weight: 300; }
+.workflow-editor .wf-item:hover .wf-del { opacity: 0.5; }
+.workflow-editor .wf-item .wf-del:hover { opacity: 1; }
+
+/* ==================== CANVAS ==================== */
+.workflow-editor #we-canvas-container {
+    grid-area: canvas;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-canvas);
+    cursor: grab;
+}
+.workflow-editor #we-canvas-container.panning { cursor: grabbing; }
+
+.workflow-editor #we-canvas-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.workflow-editor #we-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+}
+
+.workflow-editor #we-connections-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.workflow-editor #we-connections-svg path.conn {
+    fill: none;
+    stroke-width: 2.5;
+    pointer-events: stroke;
+    cursor: pointer;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
+    transition: stroke-width 0.15s;
+}
+.workflow-editor #we-connections-svg path.conn:hover { stroke-width: 4; }
+
+.workflow-editor #we-drag-connection {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-dasharray: 8 4;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.workflow-editor #we-selection-box {
+    position: absolute;
+    border: 1.5px solid var(--accent);
+    background: rgba(124, 91, 245, 0.06);
+    pointer-events: none;
+    display: none;
+    z-index: 50;
+    border-radius: 4px;
+}
+
+/* ==================== NODES ==================== */
+.workflow-editor .node {
+    position: absolute;
+    width: var(--node-w);
+    background: var(--bg-node);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    cursor: move;
+    user-select: none;
+    box-shadow: var(--shadow-node);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    z-index: 1;
+}
+.workflow-editor .node:hover {
+    box-shadow: var(--shadow-node-hover);
+    border-color: var(--border-bright);
+    z-index: 2;
+}
+.workflow-editor .node.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow), var(--shadow-node-hover);
+    z-index: 3;
+}
+.workflow-editor .node.running {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 2px var(--orange-glow), 0 0 24px var(--orange-glow), var(--shadow-node);
+    animation: node-pulse 2s ease-in-out infinite;
+}
+.workflow-editor .node.completed { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-glow), var(--shadow-node); }
+.workflow-editor .node.error { border-color: var(--red); box-shadow: 0 0 0 2px var(--red-glow), var(--shadow-node); }
+
+.workflow-editor .node-running-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(251, 191, 36, 0.25), transparent);
+    color: var(--orange);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 8px 8px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    letter-spacing: 0.5px;
+    animation: overlay-pulse 2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+}
+@keyframes overlay-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes node-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px var(--orange-glow), 0 0 24px var(--orange-glow), var(--shadow-node); }
+    50% { box-shadow: 0 0 0 3px var(--orange-glow), 0 0 40px var(--orange-glow), var(--shadow-node); }
+}
+
+.workflow-editor .node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.workflow-editor .node-header-icon {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.workflow-editor .node-header-icon svg { width: 14px; height: 14px; }
+
+.workflow-editor .node-header-title {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -0.1px;
+}
+
+.workflow-editor .node-header-status {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.workflow-editor .node-header-status.idle { background: var(--text-dim); opacity: 0.3; }
+.workflow-editor .node-header-status.running { background: var(--orange); animation: dot-pulse 1s infinite; }
+.workflow-editor .node-header-status.completed { background: var(--green); }
+.workflow-editor .node-header-status.error { background: var(--red); }
+
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.workflow-editor .node-body { padding: 8px 0 4px; }
+
+.workflow-editor .node-port-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 14px;
+    font-size: 11px;
+    color: var(--text-dim);
+    position: relative;
+}
+.workflow-editor .node-port-row.input { justify-content: flex-start; }
+.workflow-editor .node-port-row.output { justify-content: flex-end; }
+
+.workflow-editor .port-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: var(--bg-node-solid);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: crosshair;
+    z-index: 5;
+    transition: all 0.15s ease;
+}
+.workflow-editor .port-dot:hover { transform: translateY(-50%) scale(1.5); filter: brightness(1.3); }
+.workflow-editor .port-dot.input { left: -6px; }
+.workflow-editor .port-dot.output { right: -6px; }
+
+.workflow-editor .port-dot[data-type="text"] { border-color: var(--port-text); }
+.workflow-editor .port-dot[data-type="image"] { border-color: var(--port-image); }
+.workflow-editor .port-dot[data-type="audio"] { border-color: var(--port-audio); }
+.workflow-editor .port-dot[data-type="video"] { border-color: var(--port-video); }
+
+.workflow-editor .port-dot.connected[data-type="text"] { background: var(--port-text); box-shadow: 0 0 6px var(--port-text); }
+.workflow-editor .port-dot.connected[data-type="image"] { background: var(--port-image); box-shadow: 0 0 6px var(--port-image); }
+.workflow-editor .port-dot.connected[data-type="audio"] { background: var(--port-audio); box-shadow: 0 0 6px var(--port-audio); }
+.workflow-editor .port-dot.connected[data-type="video"] { background: var(--port-video); box-shadow: 0 0 6px var(--port-video); }
+
+.workflow-editor .port-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.2px; }
+.workflow-editor .node-port-row.input .port-label { margin-left: 10px; }
+.workflow-editor .node-port-row.output .port-label { margin-right: 10px; }
+
+/* Node preview */
+.workflow-editor .node-preview {
+    padding: 6px 12px 8px;
+    text-align: center;
+}
+.workflow-editor .node-preview img, .workflow-editor .node-preview video {
+    max-width: 100%;
+    max-height: 140px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    object-fit: cover;
+}
+.workflow-editor .node-preview video { background: #000; }
+.workflow-editor .node-preview .preview-text {
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 6px 8px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    word-break: break-word;
+    max-height: 48px;
+    overflow: hidden;
+    line-height: 1.4;
+    text-align: left;
+    font-family: var(--mono);
+}
+
+.workflow-editor .node-run-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 4px 12px 10px;
+    padding: 6px 0;
+    background: linear-gradient(135deg, var(--accent), #6041d4);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    letter-spacing: 0.3px;
+}
+.workflow-editor .node-run-btn:hover { filter: brightness(1.15); box-shadow: 0 0 16px var(--accent-glow); }
+.workflow-editor .node-run-btn:active { transform: scale(0.97); }
+.workflow-editor .node-run-btn svg { width: 12px; height: 12px; }
+
+/* ==================== PROPERTIES PANEL ==================== */
+.workflow-editor #we-props-panel {
+    grid-area: props;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.workflow-editor .panel-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-bright);
+}
+
+.workflow-editor .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+}
+
+.workflow-editor .prop-group { margin-bottom: 16px; }
+
+.workflow-editor .prop-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+
+.workflow-editor .prop-input, .workflow-editor .prop-select, .workflow-editor .prop-textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.workflow-editor .prop-input:focus, .workflow-editor .prop-select:focus, .workflow-editor .prop-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.workflow-editor .prop-textarea {
+    min-height: 90px;
+    resize: vertical;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.6;
+}
+.workflow-editor .prop-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236e6e8a' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+.workflow-editor .prop-range-row { display: flex; align-items: center; gap: 10px; }
+.workflow-editor .prop-range-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 4px; }
+.workflow-editor .prop-range-row .range-val {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+    color: var(--text-dim);
+    min-width: 32px;
+    text-align: right;
+}
+
+.workflow-editor .prop-file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-input);
+    border: 2px dashed var(--border-bright);
+    border-radius: var(--radius);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.workflow-editor .prop-file-btn:hover { border-color: var(--accent); color: var(--text-bright); background: rgba(124, 91, 245, 0.05); }
+.workflow-editor .prop-file-btn svg { width: 16px; height: 16px; }
+
+.workflow-editor .prop-empty {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: center;
+    padding: 48px 24px;
+    line-height: 1.7;
+}
+
+/* ==================== CONTEXT MENU ==================== */
+.workflow-editor .context-menu {
+    position: fixed;
+    background: var(--bg-node-solid);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius);
+    padding: 6px;
+    min-width: 180px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.workflow-editor .ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.1s ease;
+}
+.workflow-editor .ctx-item:hover { background: var(--bg-hover); color: var(--text-bright); }
+.workflow-editor .ctx-item.danger { color: var(--red); }
+.workflow-editor .ctx-item.danger:hover { background: rgba(248,113,113,0.1); }
+.workflow-editor .ctx-item svg { width: 14px; height: 14px; opacity: 0.7; }
+.workflow-editor .ctx-item .ctx-key {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-weight: 500;
+    padding: 1px 5px;
+    background: var(--bg-input);
+    border-radius: 4px;
+}
+
+.workflow-editor .ctx-separator { height: 1px; background: var(--border); margin: 4px 8px; }
+
+/* ==================== TOASTS ==================== */
+.workflow-editor #we-toasts {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.workflow-editor .toast {
+    padding: 12px 18px;
+    background: var(--bg-node-solid);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    pointer-events: auto;
+    animation: toast-in 0.25s ease;
+    max-width: 380px;
+}
+.workflow-editor .toast.error { border-color: rgba(248,113,113,0.4); color: var(--red); }
+.workflow-editor .toast.success { border-color: rgba(52,211,153,0.4); color: var(--green); }
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==================== MODAL ==================== */
+.workflow-editor .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.workflow-editor .modal {
+    background: var(--bg-node-solid);
+    border: 1px solid var(--border-bright);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 360px;
+    max-width: 460px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+
+.workflow-editor .modal h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-bright);
+}
+
+.workflow-editor .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* Scrollbar */
+.workflow-editor ::-webkit-scrollbar { width: 5px; }
+.workflow-editor ::-webkit-scrollbar-track { background: transparent; }
+.workflow-editor ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+.workflow-editor ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ==================== CHAT PANEL ==================== */
+.workflow-editor #we-chat-panel {
+    grid-area: props;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+.workflow-editor #we-chat-panel.active { display: flex; }
+
+.workflow-editor .chat-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-bright);
+}
+.workflow-editor .chat-header-title {
+    display: flex; align-items: center; gap: 8px;
+}
+.workflow-editor .chat-header-title svg { width: 16px; height: 16px; color: var(--accent); }
+.workflow-editor .chat-close-btn {
+    background: none; border: none; color: var(--text-dim);
+    cursor: pointer; padding: 4px; font-size: 18px; line-height: 1;
+    transition: color 0.15s;
+}
+.workflow-editor .chat-close-btn:hover { color: var(--text-bright); }
+
+.workflow-editor .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.workflow-editor .chat-msg {
+    max-width: 92%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+.workflow-editor .chat-msg.user {
+    align-self: flex-end;
+    background: var(--accent);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.workflow-editor .chat-msg.assistant {
+    align-self: flex-start;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+}
+.workflow-editor .chat-msg.assistant strong { color: var(--text-bright); }
+.workflow-editor .chat-msg.assistant code {
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px; border-radius: 4px;
+    font-family: var(--mono); font-size: 11px;
+}
+
+.workflow-editor .chat-action {
+    align-self: center;
+    background: rgba(124, 91, 245, 0.08);
+    border: 1px solid rgba(124, 91, 245, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--accent-hover);
+    cursor: pointer;
+    max-width: 100%;
+    transition: background 0.15s;
+}
+.workflow-editor .chat-action:hover { background: rgba(124, 91, 245, 0.14); }
+.workflow-editor .chat-action-header {
+    font-weight: 600; display: flex; align-items: center; gap: 6px;
+}
+.workflow-editor .chat-action-header svg { width: 12px; height: 12px; }
+.workflow-editor .chat-action-detail {
+    max-height: 0; overflow: hidden; transition: max-height 0.2s ease;
+    font-size: 10px; color: var(--text-dim); font-family: var(--mono);
+    line-height: 1.5; margin-top: 0;
+}
+.workflow-editor .chat-action.expanded .chat-action-detail {
+    max-height: 200px; margin-top: 6px;
+}
+
+.workflow-editor .chat-thinking {
+    align-self: flex-start;
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px;
+    font-size: 11px; color: var(--text-dim);
+}
+.workflow-editor .chat-thinking-dots { display: flex; gap: 4px; }
+.workflow-editor .chat-thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); opacity: 0.4;
+    animation: chat-dot-pulse 1.4s ease-in-out infinite;
+}
+.workflow-editor .chat-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.workflow-editor .chat-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes chat-dot-pulse {
+    0%, 80%, 100% { opacity: 0.4; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+.workflow-editor .chat-input-area {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: flex-end;
+}
+.workflow-editor .chat-input-area textarea {
+    flex: 1;
+    padding: 8px 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12px;
+    font-family: var(--font);
+    outline: none;
+    resize: none;
+    min-height: 36px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+}
+.workflow-editor .chat-input-area textarea:focus { border-color: var(--accent); }
+.workflow-editor .chat-input-area textarea::placeholder { color: var(--text-dim); }
+.workflow-editor .chat-send-btn {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+.workflow-editor .chat-send-btn:hover { background: var(--accent-hover); box-shadow: 0 0 12px var(--accent-glow); }
+.workflow-editor .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.workflow-editor .chat-send-btn svg { width: 16px; height: 16px; }
+
+.workflow-editor .chat-send-btn.stop-mode { background: var(--red); }
+.workflow-editor .chat-send-btn.stop-mode:hover { background: #ef4444; box-shadow: 0 0 12px var(--red-glow); }
+
+.workflow-editor .tb-btn.chat-active { background: var(--accent); border-color: var(--accent); color: #fff; }

@@ -1,0 +1,33 @@
+# Secrets & credentials
+config.json
+*.pem
+chrome-cookies.json
+.env
+
+# Generated assets (large binaries)
+assets/images/
+assets/videos/
+assets/audio/
+assets/music/
+assets/assets.json
+
+# Screenshots (large, not source code)
+screenshots/
+
+# Test artifacts
+test-results/
+
+# Node modules
+node_modules/
+
+# Temp/scratch scripts
+*.mjs
+*.py
+!server.js
+!app.js
+
+# Backups
+*.backup-*
+
+# Shell scripts
+*.sh
