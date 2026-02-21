@@ -131,8 +131,8 @@ const NODE_TYPES = {
     brain: {
         label: 'Brain Editor',
         icon: 'ic-brain',
-        color: '#4a6a4e',
-        headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.25), rgba(6,95,70,0.1))',
+        color: '#d0d0d8',
+        headerBg: 'linear-gradient(135deg, rgba(210,210,230,0.15), rgba(106,138,110,0.06))',
         inputs: [
             { id: 'video', type: 'video', label: 'Video Input' },
             { id: 'text', type: 'text', label: 'Style Prompt' },
@@ -286,6 +286,7 @@ function renderNode(node) {
     el.className = 'node';
     el.id = 'node-' + node.id;
     el.dataset.nodeId = node.id;
+    el.dataset.type = node.type;
     el.style.left = node.x + 'px';
     el.style.top = node.y + 'px';
 

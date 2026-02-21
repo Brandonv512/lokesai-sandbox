@@ -879,3 +879,85 @@
 .workflow-editor .chat-send-btn.stop-mode:hover { background: #ef4444; box-shadow: 0 0 12px var(--red-glow); }
 
 .workflow-editor .tb-btn.chat-active { background: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
+
+/* ══════ Brain Node Electric Animations ══════ */
+
+/* Synapse spark pulse — staggered timing */
+.brain-spark { opacity: 0; }
+.brain-spark.s1 { animation: brainSpark 3s ease-in-out 0.0s infinite; }
+.brain-spark.s2 { animation: brainSpark 3s ease-in-out 0.5s infinite; }
+.brain-spark.s3 { animation: brainSpark 3s ease-in-out 1.0s infinite; }
+.brain-spark.s4 { animation: brainSpark 3s ease-in-out 1.5s infinite; }
+.brain-spark.s5 { animation: brainSpark 3s ease-in-out 2.0s infinite; }
+.brain-spark.s6 { animation: brainSpark 3s ease-in-out 2.5s infinite; }
+.brain-spark.s7 { animation: brainSpark 2s ease-in-out 0.3s infinite; }
+
+@keyframes brainSpark {
+    0%, 100% { opacity: 0; r: 0.3; }
+    15% { opacity: 0.9; r: 1.0; }
+    30% { opacity: 0.2; r: 0.5; }
+    45% { opacity: 0.7; r: 0.8; }
+    60% { opacity: 0; r: 0.3; }
+}
+
+/* Electric arc flash — very subtle */
+.brain-arc { opacity: 0; }
+.brain-arc.a1 { animation: brainArc 4s ease-in-out 0.0s infinite; }
+.brain-arc.a2 { animation: brainArc 4s ease-in-out 1.0s infinite; }
+.brain-arc.a3 { animation: brainArc 4s ease-in-out 2.0s infinite; }
+.brain-arc.a4 { animation: brainArc 4s ease-in-out 3.0s infinite; }
+
+@keyframes brainArc {
+    0%, 100% { opacity: 0; stroke-width: 0.3; }
+    10% { opacity: 0.5; stroke-width: 0.8; }
+    20% { opacity: 0; stroke-width: 0.3; }
+    25% { opacity: 0.3; stroke-width: 0.6; }
+    35% { opacity: 0; stroke-width: 0.3; }
+}
+
+/* Brain shell gentle glow pulse */
+.brain-shell {
+    animation: brainGlow 5s ease-in-out infinite;
+}
+@keyframes brainGlow {
+    0%, 100% { filter: drop-shadow(0 0 1px rgba(210,210,230,0.1)); stroke: #c0c0c8; }
+    50% { filter: drop-shadow(0 0 3px rgba(210,210,230,0.3)) drop-shadow(0 0 6px rgba(106,138,110,0.15)); stroke: #e4e4ec; }
+}
+
+/* Brain node on canvas — enhanced glow when dropped */
+.node[data-type="brain"] .node-header-icon {
+    position: relative;
+    overflow: visible;
+}
+.node[data-type="brain"] .node-header-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(210,210,230,0.08) 0%, transparent 70%);
+    animation: brainNodeGlow 4s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes brainNodeGlow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.15); }
+}
+
+/* Palette brain icon enhanced glow */
+.palette-item[data-node-type="brain"] .palette-icon {
+    position: relative;
+    overflow: visible;
+}
+.palette-item[data-node-type="brain"] .palette-icon::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 12px;
+    background: radial-gradient(circle, rgba(210,210,230,0.06) 0%, rgba(106,138,110,0.03) 50%, transparent 70%);
+    animation: brainPaletteGlow 5s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes brainPaletteGlow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
