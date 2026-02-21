@@ -5032,6 +5032,7 @@ async function sendMasterAgentMessage() {
     masterAgentHistory.push({ role: 'user', content: message });
 
     // Show thinking
+    setLokiMood('thinking');
     const thinking = document.getElementById('masterAgentThinking');
     if (thinking) thinking.style.display = 'flex';
 
@@ -5055,6 +5056,9 @@ async function sendMasterAgentMessage() {
         addAgentMessage('agent', replyText);
         masterAgentHistory.push({ role: 'assistant', content: replyText });
 
+        setLokiMood('talking');
+        setTimeout(() => setLokiMood('idle'), 3000);
+
         // Speak the reply if voice mode is on
         if (agentVoiceEnabled) speakText(replyText);
 
@@ -5067,6 +5071,8 @@ async function sendMasterAgentMessage() {
     } catch (e) {
         if (thinking) thinking.style.display = 'none';
         addAgentMessage('agent', 'Error: ' + e.message);
+        setLokiMood('annoyed');
+        setTimeout(() => setLokiMood('idle'), 4000);
     }
 }
 
@@ -5225,12 +5231,14 @@ function speakText(text) {
     const cleanText = text.replace(/<[^>]*>/g, '').replace(/[\u{1F600}-\u{1F9FF}]/gu, '').trim();
     if (!cleanText) return;
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    // Try to pick a good voice
+    utterance.rate = 0.85;
+    utterance.pitch = 0.6;
+    utterance.onend = () => setLokiMood('idle');
+    // Deep alien voice — prefer male voices
     const voices = speechSynthesis.getVoices();
-    const preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google UK English Female') || v.name.includes('Karen'));
+    const preferred = voices.find(v => v.name.includes('Daniel') || v.name.includes('Alex') || v.name.includes('Fred') || v.name.includes('Google UK English Male'));
     if (preferred) utterance.voice = preferred;
+    setLokiMood('talking');
     speechSynthesis.speak(utterance);
 }
 
@@ -5366,3 +5374,89 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// ==================== LOKI CHARACTER SYSTEM ====================
+
+// --- Draggable Logic ---
+(function initLokiDrag() {
+    const el = document.getElementById('lokiCharacter');
+    if (!el) return;
+    let isDragging = false, startX, startY, origX, origY, hasMoved = false;
+
+    el.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.loki-speech-bubble')) return;
+        isDragging = true; hasMoved = false;
+        startX = e.clientX; startY = e.clientY;
+        const rect = el.getBoundingClientRect();
+        origX = rect.left; origY = rect.top;
+        el.classList.add('dragging');
+        el.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    });
+
+    window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
+        if (!hasMoved) return;
+        let newX = origX + dx, newY = origY + dy;
+        newX = Math.max(0, Math.min(window.innerWidth - 80, newX));
+        newY = Math.max(0, Math.min(window.innerHeight - 100, newY));
+        el.style.left = newX + 'px';
+        el.style.top = newY + 'px';
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+    });
+
+    window.addEventListener('pointerup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.classList.remove('dragging');
+        if (!hasMoved) toggleMasterAgent();
+    });
+})();
+
+// --- Emote System ---
+function setLokiMood(mood) {
+    const el = document.getElementById('lokiCharacter');
+    if (!el) return;
+    el.setAttribute('data-mood', mood);
+    const mouth = el.querySelector('.loki-mouth');
+    const bubble = document.getElementById('lokiSpeechBubble');
+    if (mouth) {
+        switch(mood) {
+            case 'thinking': mouth.setAttribute('d', 'M34 20 Q40.5 21 47 20'); break;
+            case 'talking': mouth.setAttribute('d', 'M34 20 Q40.5 26 47 20'); break;
+            case 'annoyed': mouth.setAttribute('d', 'M34 20 Q40.5 19 47 20'); break;
+            case 'grumpy': mouth.setAttribute('d', 'M34 20 Q40.5 18 47 20'); break;
+            default: mouth.setAttribute('d', 'M34 20 Q40.5 22 47 20'); break;
+        }
+    }
+    // Toggle tongue visibility on talking/thinking
+    const tongue = el.querySelector('.serpent-tongue');
+    if (tongue) tongue.style.opacity = (mood === 'talking' || mood === 'thinking') ? '0.9' : '0';
+    if (bubble && mood === 'grumpy') {
+        const quips = [
+            "the depths are calling me back...",
+            "i've coiled around worlds older than your species",
+            "do not test my patience, mortal",
+            "i was sleeping in the abyss. you woke me.",
+            "*hisses in ancient norse*",
+            "ragnarök would be a mercy compared to this",
+            "the midgard serpent does not do small talk",
+            "when i rise, the seas will boil. just saying."
+        ];
+        bubble.textContent = quips[Math.floor(Math.random() * quips.length)];
+        bubble.classList.add('visible');
+        setTimeout(() => bubble.classList.remove('visible'), 4000);
+    }
+}
+
+// Idle chatter — every 60s, 50% chance
+setInterval(() => {
+    const el = document.getElementById('lokiCharacter');
+    if (!el || el.getAttribute('data-mood') !== 'idle') return;
+    if (Math.random() > 0.5) return;
+    setLokiMood('grumpy');
+    setTimeout(() => setLokiMood('idle'), 5000);
+}, 60000);

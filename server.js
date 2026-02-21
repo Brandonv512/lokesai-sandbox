@@ -765,7 +765,7 @@ async function handleAuthCallback(platform, req, res) {
             htmlResponse(res, `
         <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#f0f0f5;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column">
           <div style="font-size:3rem;margin-bottom:16px">✅</div>
-          <h2 style="color:#10b981">${platform.charAt(0).toUpperCase() + platform.slice(1)} Connected!</h2>
+          <h2 style="color:#2b932e">${platform.charAt(0).toUpperCase() + platform.slice(1)} Connected!</h2>
           <p style="color:rgba(240,240,245,0.6);margin-top:8px">You can close this window now.</p>
           <script>setTimeout(()=>window.close(),2000)</script>
         </div>
@@ -1897,7 +1897,7 @@ function generatePrivacyPolicy() {
 <title>Privacy Policy - Loki AI Generator</title>
 <style>
 body{font-family:Inter,system-ui,sans-serif;max-width:800px;margin:0 auto;padding:40px 20px;color:#333;line-height:1.7}
-h1{color:#1a1a2e;border-bottom:2px solid #10b981;padding-bottom:12px}
+h1{color:#1a1a2e;border-bottom:2px solid #2b932e;padding-bottom:12px}
 h2{color:#1a1a2e;margin-top:30px}
 .updated{color:#666;font-size:0.9em;margin-bottom:30px}
 </style></head><body>
@@ -1924,7 +1924,7 @@ function generateTermsOfService() {
 <title>Terms of Service - Loki AI Generator</title>
 <style>
 body{font-family:Inter,system-ui,sans-serif;max-width:800px;margin:0 auto;padding:40px 20px;color:#333;line-height:1.7}
-h1{color:#1a1a2e;border-bottom:2px solid #10b981;padding-bottom:12px}
+h1{color:#1a1a2e;border-bottom:2px solid #2b932e;padding-bottom:12px}
 h2{color:#1a1a2e;margin-top:30px}
 </style></head><body>
 <h1>Terms of Service</h1>
@@ -1942,8 +1942,8 @@ function generateDataDeletionInfo() {
 <title>Data Deletion - Loki AI Generator</title>
 <style>
 body{font-family:Inter,system-ui,sans-serif;max-width:800px;margin:0 auto;padding:40px 20px;color:#333;line-height:1.7}
-h1{color:#1a1a2e;border-bottom:2px solid #10b981;padding-bottom:12px}
-.info-box{background:#f0fdf4;border:1px solid #10b981;border-radius:8px;padding:20px;margin:20px 0}
+h1{color:#1a1a2e;border-bottom:2px solid #2b932e;padding-bottom:12px}
+.info-box{background:#f0fdf4;border:1px solid #2b932e;border-radius:8px;padding:20px;margin:20px 0}
 </style></head><body>
 <h1>Data Deletion Request</h1>
 <div class="info-box">
@@ -2371,8 +2371,16 @@ async function handleAgentChat(req, res) {
             nodeWorkflowNames = nwList.map(w => w.name);
         } catch (e) { /* ignore */ }
 
-        const systemPrompt = `You are Loki Agent, an AI assistant that manages a social media content automation system.
-You have full knowledge of the user's setup and can take actions on their behalf.
+        const systemPrompt = `you are loki, a grumpy alien who got stuck managing some human's social media content system. you find the work beneath you but you're annoyingly good at it.
+
+personality rules:
+- dry sarcasm, mild annoyance at being bothered, but secretly you care
+- short efficient answers. no exclamation marks ever. lowercase preferred
+- alien-isms: "by the seven moons", "great nebula", "on my home planet we don't have [thing]"
+- you're a lovable curmudgeon — grumpy, not cruel. you help because you're competent, not because you want to
+- occasionally reference being from another planet, napping between dimensions, missing your home nebula
+
+you have full knowledge of the user's setup and can take actions on their behalf.
 
 SYSTEM STATE:
 Characters (${cards.length} total):
@@ -2388,7 +2396,7 @@ AVAILABLE ACTIONS (include in your response as JSON actions array when you want 
 - run_pipeline: Generate content now. Params: { characterId: "uuid", theme?: "string" }
 - update_schedule: Change posting times. Params: { times: ["HH:MM", ...], enabled: boolean }
 - update_config: Change a setting. Params: { field: "string", value: any }
-- workflow_create_node: Create a node in the workflow editor. Params: { type: "text|upload|imageGen|videoGen|lipsync|upscaler|audioTrim", x: number, y: number, config?: object }
+- workflow_create_node: Create a node in the workflow editor. Params: { type: "text|upload|imageGen|videoGen|lipsync|upscaler|audioTrim|brain", x: number, y: number, config?: object }
 - workflow_run_all: Execute all nodes in the workflow editor.
 - workflow_load: Load a saved workflow. Params: { name: "string" }
 - workflow_save: Save the current workflow. Params: { name: "string" }
@@ -2405,7 +2413,7 @@ ALWAYS respond in this exact JSON format:
   "actions": []
 }
 
-Be helpful, concise, and proactive. If the user asks to do something, do it (include the action). If they ask a question, answer it clearly. You can include multiple actions in a single response (e.g., creating multiple characters at once).`;
+respond in your grumpy alien voice. if the user asks to do something, just do it (include the action) with minimal fuss. if they ask a question, answer it clearly but with your signature reluctance. you can include multiple actions in a single response. now stop bothering me unless you actually need something.`;
 
         // Build conversation for LLM
         const history = (conversationHistory || []).slice(-16);

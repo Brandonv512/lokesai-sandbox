@@ -45,8 +45,8 @@ const NODE_TYPES = {
     text: {
         label: 'Text',
         icon: 'ic-text',
-        color: '#fbbf24',
-        headerBg: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05))',
+        color: '#36da45',
+        headerBg: 'linear-gradient(135deg, rgba(163,230,53,0.15), rgba(163,230,53,0.05))',
         inputs: [],
         outputs: [{ id: 'text', type: 'text', label: 'Text' }],
         defaults: { text: '' },
@@ -55,8 +55,8 @@ const NODE_TYPES = {
     upload: {
         label: 'Upload',
         icon: 'ic-upload',
-        color: '#c084fc',
-        headerBg: 'linear-gradient(135deg, rgba(192,132,252,0.15), rgba(192,132,252,0.05))',
+        color: '#044904',
+        headerBg: 'linear-gradient(135deg, rgba(101,163,13,0.15), rgba(101,163,13,0.05))',
         inputs: [],
         outputs: [
             { id: 'image', type: 'image', label: 'Image' },
@@ -68,8 +68,8 @@ const NODE_TYPES = {
     imageGen: {
         label: 'Image Generator',
         icon: 'ic-image',
-        color: '#60a5fa',
-        headerBg: 'linear-gradient(135deg, rgba(96,165,250,0.15), rgba(96,165,250,0.05))',
+        color: '#2b932e',
+        headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.15), rgba(43,147,46,0.05))',
         inputs: [
             { id: 'text', type: 'text', label: 'Prompt' },
             { id: 'style_ref', type: 'image', label: 'Style Ref' },
@@ -82,8 +82,8 @@ const NODE_TYPES = {
     videoGen: {
         label: 'Video Generator',
         icon: 'ic-video',
-        color: '#34d399',
-        headerBg: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.05))',
+        color: '#033603',
+        headerBg: 'linear-gradient(135deg, rgba(6,95,70,0.15), rgba(6,95,70,0.05))',
         inputs: [
             { id: 'text', type: 'text', label: 'Prompt' },
             { id: 'image', type: 'image', label: 'Image' },
@@ -97,8 +97,8 @@ const NODE_TYPES = {
     lipsync: {
         label: 'Lipsync',
         icon: 'ic-lipsync',
-        color: '#f472b6',
-        headerBg: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(244,114,182,0.05))',
+        color: '#06b6d4',
+        headerBg: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05))',
         inputs: [
             { id: 'image', type: 'image', label: 'Image' },
             { id: 'audio', type: 'audio', label: 'Audio' },
@@ -111,8 +111,8 @@ const NODE_TYPES = {
     upscaler: {
         label: 'Upscaler',
         icon: 'ic-upscale',
-        color: '#22d3ee',
-        headerBg: 'linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.05))',
+        color: '#8b5cf6',
+        headerBg: 'linear-gradient(135deg, rgba(132,240,116,0.15), rgba(132,240,116,0.05))',
         inputs: [{ id: 'image', type: 'image', label: 'Image' }],
         outputs: [{ id: 'image', type: 'image', label: 'Image' }],
         defaults: { scale: 2 },
@@ -121,12 +121,26 @@ const NODE_TYPES = {
     audioTrim: {
         label: 'Audio Trimmer',
         icon: 'ic-scissors',
-        color: '#fb923c',
-        headerBg: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(251,146,60,0.05))',
+        color: '#f59e0b',
+        headerBg: 'linear-gradient(135deg, rgba(134,239,172,0.15), rgba(134,239,172,0.05))',
         inputs: [{ id: 'audio', type: 'audio', label: 'Audio' }],
         outputs: [{ id: 'audio', type: 'audio', label: 'Trimmed' }],
         defaults: { start_time: 0, end_time: 30 },
         desc: 'Trim audio clip by time range',
+    },
+    brain: {
+        label: 'Brain Editor',
+        icon: 'ic-brain',
+        color: '#2b932e',
+        headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.25), rgba(6,95,70,0.1))',
+        inputs: [
+            { id: 'video', type: 'video', label: 'Video Input' },
+            { id: 'text', type: 'text', label: 'Style Prompt' },
+            { id: 'audio', type: 'audio', label: 'Audio Track' },
+        ],
+        outputs: [{ id: 'video', type: 'video', label: 'Edited Video' }],
+        defaults: { prompt: '', style: 'cinematic', transitions: 'smooth', pacing: 'medium', color_grade: 'auto' },
+        desc: 'AI video editor — prompted style cuts',
     },
 };
 
@@ -340,7 +354,7 @@ function renderNode(node) {
     }
 
     // Run button
-    if (['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim'].includes(node.type)) {
+    if (['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim', 'brain'].includes(node.type)) {
         const runBtn = document.createElement('button');
         runBtn.className = 'node-run-btn';
         runBtn.innerHTML = `${svgIcon('ic-play', 11)} Run`;
@@ -465,7 +479,7 @@ function updatePropsPanel() {
 
     const typeDef = NODE_TYPES[node.type];
     title.textContent = typeDef.label;
-    runBtn.style.display = ['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim'].includes(node.type) ? '' : 'none';
+    runBtn.style.display = ['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim', 'brain'].includes(node.type) ? '' : 'none';
 
     let html = '';
     html += `<div class="prop-group"><label class="prop-label">Node ID</label><input class="prop-input" value="${node.id}" readonly style="opacity:0.4"></div>`;
@@ -495,7 +509,7 @@ function updatePropsPanel() {
             const dur = Math.max(minDur, Math.min(maxDur, node.config.duration || (isOmni ? 5 : 10)));
             html += `<div class="prop-group"><label class="prop-label">Duration</label><div class="prop-range-row"><input type="range" min="${minDur}" max="${maxDur}" value="${dur}" data-field="duration"><span class="range-val">${dur}s</span></div></div>`;
             if (isOmni) {
-                html += `<div class="prop-group" style="padding:8px 10px;background:rgba(52,211,153,0.08);border-radius:6px;border:1px solid rgba(52,211,153,0.15);margin-top:4px"><span style="font-size:11px;color:#34d399;line-height:1.4">Connect <b>Character Ref</b> and <b>Frontal Ref</b> ports for character consistency. Use <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px">@Element1</code> in your prompt to reference the character.</span></div>`;
+                html += `<div class="prop-group" style="padding:8px 10px;background:rgba(54,218,69,0.08);border-radius:6px;border:1px solid rgba(54,218,69,0.15);margin-top:4px"><span style="font-size:11px;color:#36da45;line-height:1.4">Connect <b>Character Ref</b> and <b>Frontal Ref</b> ports for character consistency. Use <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px">@Element1</code> in your prompt to reference the character.</span></div>`;
             }
             break;
         }
@@ -508,7 +522,15 @@ function updatePropsPanel() {
         case 'audioTrim':
             html += `<div class="prop-group"><label class="prop-label">Start Time (seconds)</label><div class="prop-range-row"><input type="range" min="0" max="300" step="0.5" value="${node.config.start_time || 0}" data-field="start_time"><span class="range-val">${node.config.start_time || 0}s</span></div></div>`;
             html += `<div class="prop-group"><label class="prop-label">End Time (seconds)</label><div class="prop-range-row"><input type="range" min="0.5" max="300" step="0.5" value="${node.config.end_time || 30}" data-field="end_time"><span class="range-val">${node.config.end_time || 30}s</span></div></div>`;
-            html += `<div class="prop-group" style="padding:8px 10px;background:rgba(251,146,60,0.08);border-radius:6px;border:1px solid rgba(251,146,60,0.15);margin-top:4px"><span style="font-size:11px;color:#fb923c;line-height:1.4">Connect an <b>Upload</b> node with audio. Set start/end times then click <b>Run</b> to trim the clip.</span></div>`;
+            html += `<div class="prop-group" style="padding:8px 10px;background:rgba(134,239,172,0.08);border-radius:6px;margin-top:4px"><span style="font-size:11px;color:#86efac;line-height:1.4">Connect an <b>Upload</b> node with audio. Set start/end times then click <b>Run</b> to trim the clip.</span></div>`;
+            break;
+        case 'brain':
+            html += `<div class="prop-group"><label class="prop-label">Edit Style</label><select class="prop-select" data-field="style"><option value="cinematic" ${node.config.style === 'cinematic' ? 'selected' : ''}>Cinematic</option><option value="fast-cuts" ${node.config.style === 'fast-cuts' ? 'selected' : ''}>Fast Cuts</option><option value="documentary" ${node.config.style === 'documentary' ? 'selected' : ''}>Documentary</option><option value="music-video" ${node.config.style === 'music-video' ? 'selected' : ''}>Music Video</option><option value="vlog" ${node.config.style === 'vlog' ? 'selected' : ''}>Vlog</option></select></div>`;
+            html += `<div class="prop-group"><label class="prop-label">Transitions</label><select class="prop-select" data-field="transitions"><option value="smooth" ${node.config.transitions === 'smooth' ? 'selected' : ''}>Smooth</option><option value="hard-cut" ${node.config.transitions === 'hard-cut' ? 'selected' : ''}>Hard Cut</option><option value="dissolve" ${node.config.transitions === 'dissolve' ? 'selected' : ''}>Dissolve</option><option value="whip" ${node.config.transitions === 'whip' ? 'selected' : ''}>Whip Pan</option></select></div>`;
+            html += `<div class="prop-group"><label class="prop-label">Pacing</label><select class="prop-select" data-field="pacing"><option value="slow" ${node.config.pacing === 'slow' ? 'selected' : ''}>Slow</option><option value="medium" ${node.config.pacing === 'medium' ? 'selected' : ''}>Medium</option><option value="fast" ${node.config.pacing === 'fast' ? 'selected' : ''}>Fast</option></select></div>`;
+            html += `<div class="prop-group"><label class="prop-label">Color Grade</label><select class="prop-select" data-field="color_grade"><option value="auto" ${node.config.color_grade === 'auto' ? 'selected' : ''}>Auto</option><option value="warm" ${node.config.color_grade === 'warm' ? 'selected' : ''}>Warm</option><option value="cool" ${node.config.color_grade === 'cool' ? 'selected' : ''}>Cool</option><option value="desaturated" ${node.config.color_grade === 'desaturated' ? 'selected' : ''}>Desaturated</option><option value="neon" ${node.config.color_grade === 'neon' ? 'selected' : ''}>Neon</option></select></div>`;
+            html += `<div class="prop-group"><label class="prop-label">Prompt</label><textarea class="prop-textarea" data-field="prompt" rows="3" placeholder="Describe the edit style...">${escapeHtml(node.config.prompt || '')}</textarea></div>`;
+            html += `<div class="prop-group" style="padding:8px 10px;background:rgba(43,147,46,0.08);border-radius:6px;margin-top:4px"><span style="font-size:11px;color:#84cc16;line-height:1.4">AI editor agent — connect video + optional audio. Prompt for cinematic styles, pacing, transitions, and color grading.</span></div>`;
             break;
     }
 
@@ -571,7 +593,7 @@ function runSelectedNode() { if (wfState.selectedNodes.size === 1) executeNode([
 
 // Auto-run downstream executable nodes when an upstream node produces a result
 async function autoRunDownstream(sourceNodeId) {
-    const executableTypes = new Set(['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim']);
+    const executableTypes = new Set(['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim', 'brain']);
     const downstream = [];
     for (const conn of wfState.connections) {
         if (conn.from.node === sourceNodeId) {
@@ -705,7 +727,7 @@ async function executeNode(nodeId, abortSignal) {
     const node = wfState.nodes.get(nodeId);
     if (!node) return;
     const typeDef = NODE_TYPES[node.type];
-    if (!['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim'].includes(node.type)) { toast(`${typeDef.label} nodes don't need execution`, 'info'); return; }
+    if (!['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim', 'brain'].includes(node.type)) { toast(`${typeDef.label} nodes don't need execution`, 'info'); return; }
 
     setNodeStatus(nodeId, 'running');
     toast(`Running ${typeDef.label}...`);
@@ -719,6 +741,7 @@ async function executeNode(nodeId, abortSignal) {
             case 'lipsync': result = await executeLipsync(node, inputs, abortSignal); break;
             case 'upscaler': result = await executeUpscaler(node, inputs, abortSignal); break;
             case 'audioTrim': result = await executeAudioTrim(node, inputs, abortSignal); break;
+            case 'brain': result = await executeBrainEditor(node, inputs, abortSignal); break;
         }
         node.result = result;
         setNodeStatus(nodeId, 'completed');
@@ -873,6 +896,35 @@ async function executeAudioTrim(node, inputs, abortSignal) {
     return { publicUrl: uploadData.url };
 }
 
+async function executeBrainEditor(node, inputs, abortSignal) {
+    if (!inputs.video) throw new Error('No video connected — Brain needs a video input');
+    const style = node.config.style || 'cinematic';
+    const transitions = node.config.transitions || 'smooth';
+    const pacing = node.config.pacing || 'medium';
+    const colorGrade = node.config.color_grade || 'auto';
+    const prompt = node.config.prompt || '';
+
+    toast('Brain analyzing video...', 'info', 'brain-edit');
+    const resp = await wfFetch('/api/workflow-editor/brain-edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            videoUrl: inputs.video,
+            audioUrl: inputs.audio || null,
+            prompt,
+            style,
+            transitions,
+            pacing,
+            colorGrade,
+        }),
+        signal: abortSignal,
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    removeToast('brain-edit');
+    return { publicUrl: data.url || inputs.video, brainMeta: { style, transitions, pacing } };
+}
+
 function encodeWAV(audioBuffer) {
     const numChannels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
@@ -917,7 +969,7 @@ function encodeWAV(audioBuffer) {
 // ==================== RUN ALL ====================
 function getExecutionOrder() {
     const order = [], visited = new Set(), visiting = new Set();
-    const executableTypes = new Set(['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim']);
+    const executableTypes = new Set(['imageGen', 'videoGen', 'lipsync', 'upscaler', 'audioTrim', 'brain']);
     function visit(nodeId) {
         if (visited.has(nodeId)) return;
         if (visiting.has(nodeId)) throw new Error('Cycle detected');
