@@ -10,39 +10,43 @@
 
 .workflow-editor {
     --bg-canvas: #000000;
-    --bg-panel: rgba(6, 6, 6, 0.55);
-    --bg-node: rgba(8, 8, 8, 0.50);
-    --bg-node-solid: #0a0a0a;
-    --bg-input: #0e0e0e;
-    --bg-hover: #141414;
-    --bg-active: #1a1a1a;
-    --border: rgba(43, 147, 46, 0.15);
-    --border-light: rgba(43, 147, 46, 0.22);
-    --border-bright: rgba(43, 147, 46, 0.35);
-    --text: #c8c8c8;
-    --text-dim: #606060;
-    --text-bright: #f0f0f0;
-    --accent: #2b932e;
-    --accent-hover: #36da45;
-    --accent-glow: rgba(43, 147, 46, 0.3);
-    --green: #36da45;
-    --green-glow: rgba(52, 211, 153, 0.3);
+    --bg-panel: rgba(4, 6, 10, 0.58);
+    --bg-node: rgba(4, 6, 10, 0.54);
+    --bg-node-solid: #060810;
+    --bg-input: #080a12;
+    --bg-hover: #0e1018;
+    --bg-active: #141620;
+    --border: rgba(210, 210, 230, 0.10);
+    --border-light: rgba(210, 210, 230, 0.12);
+    --border-bright: rgba(210, 210, 230, 0.18);
+    --text: #d0d0d8;
+    --text-dim: #707078;
+    --text-bright: #f0f0f4;
+    --accent: #3bcc3e;
+    --accent-hover: #41dd45;
+    --accent-glow: rgba(65, 220, 69, 0.22);
+    --green: #41dd45;
+    --green-glow: rgba(65, 220, 69, 0.22);
+    --yellow: #e8d44d;
+    --yellow-glow: rgba(232, 212, 77, 0.15);
+    --silver: #d0d0d8;
+    --silver-glow: rgba(210, 210, 230, 0.12);
     --red: #f87171;
     --red-glow: rgba(248, 113, 113, 0.3);
     --orange: #fbbf24;
     --orange-glow: rgba(251, 191, 36, 0.3);
     --port-text: #36da45;
-    --port-image: #2b932e;
+    --port-image: #3bcc3e;
     --port-audio: #84f074;
-    --port-video: #033603;
+    --port-video: #055105;
     --node-w: 240px;
     --radius: 12px;
     --radius-sm: 8px;
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    --shadow-node: 0 8px 32px rgba(0,0,0,0.4);
-    --shadow-node-hover: 0 12px 48px rgba(0,0,0,0.5);
-    --glass: blur(24px) saturate(1.6);
+    --shadow-node: 0 10px 40px rgba(0,0,0,0.45), 0 0 60px rgba(20,60,100,0.02);
+    --shadow-node-hover: 0 14px 56px rgba(0,0,0,0.55), 0 0 80px rgba(200,200,220,0.025);
+    --glass: blur(28px) saturate(1.9);
     font-family: var(--font);
     font-size: 13px;
     color: var(--text);
@@ -73,10 +77,10 @@
     gap: 6px;
     padding: 0 16px;
     background: var(--bg-panel);
-    background-image: linear-gradient(90deg, rgba(200,200,220,0.03) 0%, transparent 50%, rgba(43,147,46,0.02) 100%);
+    background-image: linear-gradient(90deg, rgba(200,200,220,0.04) 0%, rgba(20,60,100,0.03) 25%, transparent 55%, rgba(65,220,69,0.02) 100%);
     z-index: 100;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    backdrop-filter: blur(16px) saturate(1.5);
+    box-shadow: 0 0 60px rgba(200,200,220,0.02), 0 6px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(200,200,220,0.06);
 }
 
 .workflow-editor .logo {
@@ -97,7 +101,7 @@
     letter-spacing: -0.3px;
 }
 
-.workflow-editor .tb-sep { width: 1px; height: 24px; background: linear-gradient(180deg, transparent, rgba(43,147,46,0.12), transparent); margin: 0 6px; }
+.workflow-editor .tb-sep { width: 1px; height: 24px; background: linear-gradient(180deg, transparent, rgba(65,220,69,0.12), transparent); margin: 0 6px; }
 
 .workflow-editor .tb-btn {
     display: inline-flex;
@@ -145,12 +149,12 @@
 .workflow-editor #we-sidebar {
     grid-area: sidebar;
     background: var(--bg-panel);
-    background-image: linear-gradient(180deg, rgba(200,200,220,0.04) 0%, transparent 40%, rgba(43,147,46,0.02) 100%);
+    background-image: linear-gradient(180deg, rgba(200,200,220,0.05) 0%, rgba(20,60,100,0.03) 20%, transparent 50%, rgba(65,220,69,0.02) 100%);
     border-right: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.3), inset 1px 0 0 rgba(255,255,255,0.03);
+    box-shadow: 0 0 60px rgba(200,200,220,0.02), 0 0 40px rgba(20,60,100,0.015), 6px 0 30px rgba(0,0,0,0.35), inset 1px 0 0 rgba(200,200,220,0.05);
     backdrop-filter: var(--glass);
 }
 
@@ -181,21 +185,26 @@
 .workflow-editor .palette-item:active { cursor: grabbing; transform: scale(0.98); }
 
 .workflow-editor .palette-icon {
-    width: 36px; height: 36px;
-    border-radius: 10px;
+    width: 42px; height: 42px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
 }
-.workflow-editor .palette-icon svg { width: 18px; height: 18px; }
+.workflow-editor .palette-item:hover .palette-icon {
+    transform: scale(1.08);
+    filter: brightness(1.2);
+}
+.workflow-editor .palette-icon svg { width: 22px; height: 22px; stroke-width: 2.2px; }
 
-.workflow-editor .palette-label { font-size: 13px; font-weight: 600; color: var(--text-bright); }
-.workflow-editor .palette-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.workflow-editor .palette-label { font-size: 13px; font-weight: 600; color: #f0f0f0; }
+.workflow-editor .palette-desc { font-size: 10px; color: #808080; margin-top: 2px; }
 
 .workflow-editor .workflow-list {
-    box-shadow: inset 0 1px 0 rgba(43,147,46,0.06);
+    box-shadow: inset 0 1px 0 rgba(65,220,69,0.06);
     padding: 4px 8px 8px;
     max-height: 200px;
     overflow-y: auto;
@@ -252,12 +261,13 @@
 .workflow-editor #we-connections-svg path.conn {
     fill: none;
     stroke-width: 2.5;
+    stroke-opacity: 0.8;
     pointer-events: stroke;
     cursor: pointer;
-    filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
-    transition: stroke-width 0.15s;
+    filter: drop-shadow(0 0 6px currentColor);
+    transition: stroke-width 0.15s, stroke-opacity 0.15s;
 }
-.workflow-editor #we-connections-svg path.conn:hover { stroke-width: 4; }
+.workflow-editor #we-connections-svg path.conn:hover { stroke-width: 4.5; stroke-opacity: 1; filter: drop-shadow(0 0 10px currentColor); }
 
 .workflow-editor #we-drag-connection {
     fill: none;
@@ -283,7 +293,7 @@
     position: absolute;
     width: var(--node-w);
     background: var(--bg-node);
-    background-image: linear-gradient(135deg, rgba(200,200,220,0.04) 0%, transparent 50%, rgba(43,147,46,0.02) 100%);
+    background-image: linear-gradient(135deg, rgba(200,200,220,0.05) 0%, rgba(20,60,100,0.03) 25%, transparent 55%, rgba(65,220,69,0.02) 100%);
     backdrop-filter: var(--glass);
     -webkit-backdrop-filter: var(--glass);
     border: none;
@@ -299,7 +309,7 @@
     z-index: 2;
 }
 .workflow-editor .node.selected {
-    box-shadow: 0 0 0 2px var(--accent-glow), var(--shadow-node-hover);
+    box-shadow: 0 0 0 2px rgba(65,220,69,0.5), 0 0 20px rgba(65,220,69,0.15), var(--shadow-node-hover);
     z-index: 3;
 }
 .workflow-editor .node.running {
@@ -311,15 +321,15 @@
 
 /* Brain node — glowing green brain */
 .workflow-editor .node[data-type="brain"] {
-    box-shadow: var(--shadow-node), 0 0 30px rgba(43,147,46,0.15);
+    box-shadow: var(--shadow-node), 0 0 30px rgba(65,220,69,0.15);
     animation: brainPulse 3s ease-in-out infinite;
 }
 .workflow-editor .node[data-type="brain"]:hover {
-    box-shadow: var(--shadow-node-hover), 0 0 40px rgba(43,147,46,0.25);
+    box-shadow: var(--shadow-node-hover), 0 0 40px rgba(65,220,69,0.25);
 }
 @keyframes brainPulse {
-    0%, 100% { box-shadow: var(--shadow-node), 0 0 20px rgba(43,147,46,0.1); }
-    50% { box-shadow: var(--shadow-node), 0 0 40px rgba(43,147,46,0.2); }
+    0%, 100% { box-shadow: var(--shadow-node), 0 0 20px rgba(65,220,69,0.1); }
+    50% { box-shadow: var(--shadow-node), 0 0 40px rgba(65,220,69,0.2); }
 }
 
 .workflow-editor .node-running-overlay {
@@ -350,27 +360,29 @@
 .workflow-editor .node-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
+    gap: 10px;
+    padding: 12px 14px;
     border-radius: var(--radius) var(--radius) 0 0;
-    background: linear-gradient(180deg, rgba(43,147,46,0.06), transparent);
+    background: linear-gradient(180deg, rgba(200,200,220,0.06), rgba(20,60,100,0.03), transparent);
+    border-bottom: 1px solid rgba(200,200,220,0.05);
 }
 
 .workflow-editor .node-header-icon {
-    width: 24px; height: 24px;
-    border-radius: 6px;
+    width: 28px; height: 28px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    backdrop-filter: blur(4px);
 }
-.workflow-editor .node-header-icon svg { width: 14px; height: 14px; }
+.workflow-editor .node-header-icon svg { width: 16px; height: 16px; stroke-width: 2.2px; }
 
 .workflow-editor .node-header-title {
     flex: 1;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-bright);
+    color: #f0f0f0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -426,12 +438,12 @@
 .workflow-editor .port-dot[data-type="audio"] { border-color: var(--port-audio); }
 .workflow-editor .port-dot[data-type="video"] { border-color: var(--port-video); }
 
-.workflow-editor .port-dot.connected[data-type="text"] { background: var(--port-text); box-shadow: 0 0 6px var(--port-text); }
-.workflow-editor .port-dot.connected[data-type="image"] { background: var(--port-image); box-shadow: 0 0 6px var(--port-image); }
-.workflow-editor .port-dot.connected[data-type="audio"] { background: var(--port-audio); box-shadow: 0 0 6px var(--port-audio); }
-.workflow-editor .port-dot.connected[data-type="video"] { background: var(--port-video); box-shadow: 0 0 6px var(--port-video); }
+.workflow-editor .port-dot.connected[data-type="text"] { background: var(--port-text); box-shadow: 0 0 8px var(--port-text), 0 0 16px var(--port-text); }
+.workflow-editor .port-dot.connected[data-type="image"] { background: var(--port-image); box-shadow: 0 0 8px var(--port-image), 0 0 16px var(--port-image); }
+.workflow-editor .port-dot.connected[data-type="audio"] { background: var(--port-audio); box-shadow: 0 0 8px var(--port-audio), 0 0 16px var(--port-audio); }
+.workflow-editor .port-dot.connected[data-type="video"] { background: var(--port-video); box-shadow: 0 0 8px var(--port-video), 0 0 16px var(--port-video); }
 
-.workflow-editor .port-label { font-size: 10px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.2px; }
+.workflow-editor .port-label { font-size: 11px; font-weight: 500; color: #999; letter-spacing: 0.2px; }
 .workflow-editor .node-port-row.input .port-label { margin-left: 10px; }
 .workflow-editor .node-port-row.output .port-label { margin-right: 10px; }
 
@@ -488,12 +500,12 @@
 .workflow-editor #we-props-panel {
     grid-area: props;
     background: var(--bg-panel);
-    background-image: linear-gradient(180deg, rgba(200,200,220,0.04) 0%, transparent 40%, rgba(43,147,46,0.02) 100%);
+    background-image: linear-gradient(180deg, rgba(200,200,220,0.05) 0%, rgba(20,60,100,0.03) 20%, transparent 50%, rgba(65,220,69,0.02) 100%);
     border-left: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: -4px 0 24px rgba(0,0,0,0.3), inset -1px 0 0 rgba(255,255,255,0.03);
+    box-shadow: 0 0 60px rgba(200,200,220,0.02), 0 0 40px rgba(20,60,100,0.015), -6px 0 30px rgba(0,0,0,0.35), inset -1px 0 0 rgba(200,200,220,0.05);
     backdrop-filter: var(--glass);
 }
 
@@ -541,7 +553,7 @@
     backdrop-filter: blur(12px) saturate(1.3);
 }
 .workflow-editor .prop-input:focus, .workflow-editor .prop-select:focus, .workflow-editor .prop-textarea:focus {
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px rgba(43,147,46,0.3);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px rgba(65,220,69,0.3);
 }
 .workflow-editor .prop-textarea {
     min-height: 90px;
@@ -631,7 +643,7 @@
     border-radius: 4px;
 }
 
-.workflow-editor .ctx-separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(43,147,46,0.1), transparent); margin: 4px 8px; }
+.workflow-editor .ctx-separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(65,220,69,0.1), transparent); margin: 4px 8px; }
 
 /* ==================== TOASTS ==================== */
 .workflow-editor #we-toasts {
@@ -824,7 +836,7 @@
 .workflow-editor .chat-input-area {
     padding: 10px 12px;
     border-top: none;
-    box-shadow: inset 0 1px 0 rgba(43,147,46,0.06);
+    box-shadow: inset 0 1px 0 rgba(65,220,69,0.06);
     display: flex; gap: 8px; align-items: flex-end;
 }
 .workflow-editor .chat-input-area textarea {
@@ -845,7 +857,7 @@
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
     backdrop-filter: blur(12px) saturate(1.3);
 }
-.workflow-editor .chat-input-area textarea:focus { box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px rgba(43,147,46,0.3); }
+.workflow-editor .chat-input-area textarea:focus { box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px rgba(65,220,69,0.3); }
 .workflow-editor .chat-input-area textarea::placeholder { color: var(--text-dim); }
 .workflow-editor .chat-send-btn {
     width: 36px; height: 36px;

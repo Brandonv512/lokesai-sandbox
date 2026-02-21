@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Palette Picker — Loki AI Generator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Constellation background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,0.4) 50%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.3) 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.35) 50%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.25) 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 90% 40%, rgba(255,255,255,0.4) 50%, transparent 100%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.2) 50%, transparent 100%),
+      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+
+  .palettes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .palette-card {
+    background: rgba(12, 12, 12, 0.6);
+    backdrop-filter: blur(24px) saturate(1.6);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  .palette-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .palette-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .palette-desc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+  }
+
+  /* Swatch row */
+  .swatches {
+    display: flex;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    height: 72px;
+  }
+  .swatch {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(0,0,0,0.6);
+    transition: flex 0.3s ease;
+  }
+  .swatch:hover {
+    flex: 1.5;
+  }
+  .swatch.light-text {
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Mock UI preview */
+  .preview {
+    background: rgba(0,0,0,0.4);
+    border-radius: 10px;
+    padding: 16px;
+    min-height: 180px;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+  .preview-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .preview-title {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .preview-nav {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .preview-nav-item {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+  }
+  .preview-nav-item.active {
+    color: #fff;
+  }
+
+  .preview-cards {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .preview-stat {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(8px);
+  }
+  .preview-stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .preview-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .preview-btn-row {
+    display: flex;
+    gap: 8px;
+  }
+  .preview-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    backdrop-filter: blur(8px);
+  }
+  .preview-btn.secondary {
+    background: rgba(255,255,255,0.08);
+  }
+  .preview-btn.ghost {
+    background: transparent;
+    color: #888;
+  }
+
+  /* Node preview */
+  .preview-nodes {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .preview-node {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+  }
+  .preview-node-header {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .preview-node-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .preview-node-line {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.06);
+    margin-bottom: 4px;
+  }
+  .preview-node-line.short { width: 60%; }
+
+  .pick-label {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 13px;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Pick Your Palette</h1>
+  <p class="subtitle">Click to see how each one feels on the actual UI — dark glass panels, glowing accents, constellation bg</p>
+
+  <div class="palettes">
+
+    <!-- 1. Obsidian Emerald -->
+    <div class="palette-card" id="pal-emerald">
+      <div class="palette-name" style="color:#10b981">Obsidian Emerald</div>
+      <div class="palette-desc">Deep forest greens + bright emerald. Moody, premium, nature-tech.</div>
+      <div class="swatches">
+        <div class="swatch light-text" style="background:#047857">#047857</div>
+        <div class="swatch" style="background:#10b981">#10b981</div>
+        <div class="swatch" style="background:#34d399">#34d399</div>
+        <div class="swatch" style="background:#6ee7b7">#6ee7b7</div>
+        <div class="swatch light-text" style="background:#a3894a">#a3894a</div>
+      </div>
+      <div class="preview">
+        <div class="preview-header">
+          <div class="preview-logo" style="background:linear-gradient(135deg,#10b981,#047857);color:#fff;">L</div>
+          <div class="preview-title" style="color:#34d399">Loki AI Generator</div>
+          <div class="preview-nav">
+            <div class="preview-nav-item active" style="background:rgba(16,185,129,0.15);color:#34d399">Command</div>
+            <div class="preview-nav-item">Social</div>
+            <div class="preview-nav-item">Workflows</div>
+          </div>
+        </div>
+        <div class="preview-cards">
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(16,185,129,0.08);">
+            <div class="preview-stat-label">Active</div>
+            <div class="preview-stat-value" style="color:#10b981">247</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(16,185,129,0.08);">
+            <div class="preview-stat-label">Revenue</div>
+            <div class="preview-stat-value" style="color:#34d399">$12.4k</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(163,137,74,0.12);">
+            <div class="preview-stat-label">Growth</div>
+            <div class="preview-stat-value" style="color:#a3894a">+18%</div>
+          </div>
+        </div>
+        <div class="preview-btn-row">
+          <div class="preview-btn" style="background:linear-gradient(135deg,#10b981,#047857);">Generate</div>
+          <div class="preview-btn secondary" style="color:#34d399;">Configure</div>
+          <div class="preview-btn ghost" style="color:#10b981;">Cancel</div>
+        </div>
+        <div class="preview-nodes">
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#34d399"><div class="preview-node-dot" style="background:#10b981"></div> Text</div>
+            <div class="preview-node-line" style="background:rgba(16,185,129,0.15);width:80%"></div>
+            <div class="preview-node-line short" style="background:rgba(16,185,129,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#6ee7b7"><div class="preview-node-dot" style="background:#34d399"></div> Brain</div>
+            <div class="preview-node-line" style="background:rgba(52,211,153,0.15);width:70%"></div>
+            <div class="preview-node-line short" style="background:rgba(52,211,153,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#a3894a"><div class="preview-node-dot" style="background:#a3894a"></div> Video</div>
+            <div class="preview-node-line" style="background:rgba(163,137,74,0.15);width:75%"></div>
+            <div class="preview-node-line short" style="background:rgba(163,137,74,0.1)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Void Violet -->
+    <div class="palette-card" id="pal-violet">
+      <div class="palette-name" style="color:#8b5cf6">Void Violet</div>
+      <div class="palette-desc">Purple/indigo with electric violet. Cosmic alien energy.</div>
+      <div class="swatches">
+        <div class="swatch light-text" style="background:#6d28d9">#6d28d9</div>
+        <div class="swatch" style="background:#8b5cf6">#8b5cf6</div>
+        <div class="swatch" style="background:#a78bfa">#a78bfa</div>
+        <div class="swatch" style="background:#c4b5fd">#c4b5fd</div>
+        <div class="swatch light-text" style="background:#b89d5e">#b89d5e</div>
+      </div>
+      <div class="preview">
+        <div class="preview-header">
+          <div class="preview-logo" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;">L</div>
+          <div class="preview-title" style="color:#a78bfa">Loki AI Generator</div>
+          <div class="preview-nav">
+            <div class="preview-nav-item active" style="background:rgba(139,92,246,0.15);color:#a78bfa">Command</div>
+            <div class="preview-nav-item">Social</div>
+            <div class="preview-nav-item">Workflows</div>
+          </div>
+        </div>
+        <div class="preview-cards">
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(139,92,246,0.08);">
+            <div class="preview-stat-label">Active</div>
+            <div class="preview-stat-value" style="color:#8b5cf6">247</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(139,92,246,0.08);">
+            <div class="preview-stat-label">Revenue</div>
+            <div class="preview-stat-value" style="color:#a78bfa">$12.4k</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(184,157,94,0.12);">
+            <div class="preview-stat-label">Growth</div>
+            <div class="preview-stat-value" style="color:#b89d5e">+18%</div>
+          </div>
+        </div>
+        <div class="preview-btn-row">
+          <div class="preview-btn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">Generate</div>
+          <div class="preview-btn secondary" style="color:#a78bfa;">Configure</div>
+          <div class="preview-btn ghost" style="color:#8b5cf6;">Cancel</div>
+        </div>
+        <div class="preview-nodes">
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#a78bfa"><div class="preview-node-dot" style="background:#8b5cf6"></div> Text</div>
+            <div class="preview-node-line" style="background:rgba(139,92,246,0.15);width:80%"></div>
+            <div class="preview-node-line short" style="background:rgba(139,92,246,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#c4b5fd"><div class="preview-node-dot" style="background:#a78bfa"></div> Brain</div>
+            <div class="preview-node-line" style="background:rgba(167,139,250,0.15);width:70%"></div>
+            <div class="preview-node-line short" style="background:rgba(167,139,250,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#b89d5e"><div class="preview-node-dot" style="background:#b89d5e"></div> Video</div>
+            <div class="preview-node-line" style="background:rgba(184,157,94,0.15);width:75%"></div>
+            <div class="preview-node-line short" style="background:rgba(184,157,94,0.1)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Midnight Cyan -->
+    <div class="palette-card" id="pal-cyan">
+      <div class="palette-name" style="color:#06b6d4">Midnight Cyan</div>
+      <div class="palette-desc">Cool blue-cyan tones. Clean, techy, futuristic.</div>
+      <div class="swatches">
+        <div class="swatch light-text" style="background:#0e7490">#0e7490</div>
+        <div class="swatch" style="background:#06b6d4">#06b6d4</div>
+        <div class="swatch" style="background:#22d3ee">#22d3ee</div>
+        <div class="swatch" style="background:#67e8f9">#67e8f9</div>
+        <div class="swatch light-text" style="background:#c6a664">#c6a664</div>
+      </div>
+      <div class="preview">
+        <div class="preview-header">
+          <div class="preview-logo" style="background:linear-gradient(135deg,#06b6d4,#0e7490);color:#fff;">L</div>
+          <div class="preview-title" style="color:#22d3ee">Loki AI Generator</div>
+          <div class="preview-nav">
+            <div class="preview-nav-item active" style="background:rgba(6,182,212,0.15);color:#22d3ee">Command</div>
+            <div class="preview-nav-item">Social</div>
+            <div class="preview-nav-item">Workflows</div>
+          </div>
+        </div>
+        <div class="preview-cards">
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(6,182,212,0.08);">
+            <div class="preview-stat-label">Active</div>
+            <div class="preview-stat-value" style="color:#06b6d4">247</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(6,182,212,0.08);">
+            <div class="preview-stat-label">Revenue</div>
+            <div class="preview-stat-value" style="color:#22d3ee">$12.4k</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(198,166,100,0.12);">
+            <div class="preview-stat-label">Growth</div>
+            <div class="preview-stat-value" style="color:#c6a664">+18%</div>
+          </div>
+        </div>
+        <div class="preview-btn-row">
+          <div class="preview-btn" style="background:linear-gradient(135deg,#06b6d4,#0e7490);">Generate</div>
+          <div class="preview-btn secondary" style="color:#22d3ee;">Configure</div>
+          <div class="preview-btn ghost" style="color:#06b6d4;">Cancel</div>
+        </div>
+        <div class="preview-nodes">
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#22d3ee"><div class="preview-node-dot" style="background:#06b6d4"></div> Text</div>
+            <div class="preview-node-line" style="background:rgba(6,182,212,0.15);width:80%"></div>
+            <div class="preview-node-line short" style="background:rgba(6,182,212,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#67e8f9"><div class="preview-node-dot" style="background:#22d3ee"></div> Brain</div>
+            <div class="preview-node-line" style="background:rgba(34,211,238,0.15);width:70%"></div>
+            <div class="preview-node-line short" style="background:rgba(34,211,238,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#c6a664"><div class="preview-node-dot" style="background:#c6a664"></div> Video</div>
+            <div class="preview-node-line" style="background:rgba(198,166,100,0.15);width:75%"></div>
+            <div class="preview-node-line short" style="background:rgba(198,166,100,0.1)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Blood & Gold -->
+    <div class="palette-card" id="pal-blood">
+      <div class="palette-name" style="color:#dc2626">Blood & Gold</div>
+      <div class="palette-desc">Rich crimson + warm gold. Dramatic, powerful, Norse mythology.</div>
+      <div class="swatches">
+        <div class="swatch light-text" style="background:#991b1b">#991b1b</div>
+        <div class="swatch light-text" style="background:#dc2626">#dc2626</div>
+        <div class="swatch" style="background:#f87171">#f87171</div>
+        <div class="swatch" style="background:#fca5a5">#fca5a5</div>
+        <div class="swatch light-text" style="background:#d4a843">#d4a843</div>
+      </div>
+      <div class="preview">
+        <div class="preview-header">
+          <div class="preview-logo" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;">L</div>
+          <div class="preview-title" style="color:#f87171">Loki AI Generator</div>
+          <div class="preview-nav">
+            <div class="preview-nav-item active" style="background:rgba(220,38,38,0.15);color:#f87171">Command</div>
+            <div class="preview-nav-item">Social</div>
+            <div class="preview-nav-item">Workflows</div>
+          </div>
+        </div>
+        <div class="preview-cards">
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(220,38,38,0.08);">
+            <div class="preview-stat-label">Active</div>
+            <div class="preview-stat-value" style="color:#dc2626">247</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(220,38,38,0.08);">
+            <div class="preview-stat-label">Revenue</div>
+            <div class="preview-stat-value" style="color:#f87171">$12.4k</div>
+          </div>
+          <div class="preview-stat" style="box-shadow:inset 0 0 0 1px rgba(212,168,67,0.12);">
+            <div class="preview-stat-label">Growth</div>
+            <div class="preview-stat-value" style="color:#d4a843">+18%</div>
+          </div>
+        </div>
+        <div class="preview-btn-row">
+          <div class="preview-btn" style="background:linear-gradient(135deg,#dc2626,#991b1b);">Generate</div>
+          <div class="preview-btn secondary" style="color:#f87171;">Configure</div>
+          <div class="preview-btn ghost" style="color:#dc2626;">Cancel</div>
+        </div>
+        <div class="preview-nodes">
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#f87171"><div class="preview-node-dot" style="background:#dc2626"></div> Text</div>
+            <div class="preview-node-line" style="background:rgba(220,38,38,0.15);width:80%"></div>
+            <div class="preview-node-line short" style="background:rgba(220,38,38,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#fca5a5"><div class="preview-node-dot" style="background:#f87171"></div> Brain</div>
+            <div class="preview-node-line" style="background:rgba(248,113,113,0.15);width:70%"></div>
+            <div class="preview-node-line short" style="background:rgba(248,113,113,0.1)"></div>
+          </div>
+          <div class="preview-node">
+            <div class="preview-node-header" style="color:#d4a843"><div class="preview-node-dot" style="background:#d4a843"></div> Video</div>
+            <div class="preview-node-line" style="background:rgba(212,168,67,0.15);width:75%"></div>
+            <div class="preview-node-line short" style="background:rgba(212,168,67,0.1)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="pick-label">hover over the swatches — tell me which palette you want (or describe something custom)</p>
+</div>
+</body>
+</html>

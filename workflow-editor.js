@@ -68,7 +68,7 @@ const NODE_TYPES = {
     imageGen: {
         label: 'Image Generator',
         icon: 'ic-image',
-        color: '#2b932e',
+        color: '#3bcc3e',
         headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.15), rgba(43,147,46,0.05))',
         inputs: [
             { id: 'text', type: 'text', label: 'Prompt' },
@@ -82,7 +82,7 @@ const NODE_TYPES = {
     videoGen: {
         label: 'Video Generator',
         icon: 'ic-video',
-        color: '#033603',
+        color: '#055105',
         headerBg: 'linear-gradient(135deg, rgba(6,95,70,0.15), rgba(6,95,70,0.05))',
         inputs: [
             { id: 'text', type: 'text', label: 'Prompt' },
@@ -112,7 +112,7 @@ const NODE_TYPES = {
         label: 'Upscaler',
         icon: 'ic-upscale',
         color: '#8b5cf6',
-        headerBg: 'linear-gradient(135deg, rgba(132,240,116,0.15), rgba(132,240,116,0.05))',
+        headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.15), rgba(43,147,46,0.05))',
         inputs: [{ id: 'image', type: 'image', label: 'Image' }],
         outputs: [{ id: 'image', type: 'image', label: 'Image' }],
         defaults: { scale: 2 },
@@ -131,7 +131,7 @@ const NODE_TYPES = {
     brain: {
         label: 'Brain Editor',
         icon: 'ic-brain',
-        color: '#2b932e',
+        color: '#3bcc3e',
         headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.25), rgba(6,95,70,0.1))',
         inputs: [
             { id: 'video', type: 'video', label: 'Video Input' },
@@ -200,8 +200,8 @@ function drawGrid() {
     const ox = (wfState.pan.x % dotSpacing + dotSpacing) % dotSpacing;
     const oy = (wfState.pan.y % dotSpacing + dotSpacing) % dotSpacing;
 
-    bgCtx.fillStyle = 'rgba(255,255,255,0.04)';
-    const r = Math.max(0.6, wfState.zoom * 0.9);
+    bgCtx.fillStyle = 'rgba(200,200,220,0.06)';
+    const r = Math.max(0.7, wfState.zoom * 1.0);
 
     for (let x = ox; x < w; x += dotSpacing) {
         for (let y = oy; y < h; y += dotSpacing) {
@@ -1092,7 +1092,7 @@ function initPalette() {
         item.dataset.nodeType = type;
         item.draggable = true;
         item.innerHTML = `
-            <div class="palette-icon" style="background:rgba(255,255,255,0.03);color:${def.color}">${svgIcon(def.icon, 18)}</div>
+            <div class="palette-icon" style="background:${def.color}20;color:${def.color};box-shadow:0 0 16px ${def.color}18, inset 0 0 12px ${def.color}08, 0 2px 8px rgba(0,0,0,0.4)">${svgIcon(def.icon, 22)}</div>
             <div>
                 <div class="palette-label">${def.label}</div>
                 <div class="palette-desc">${def.desc}</div>
