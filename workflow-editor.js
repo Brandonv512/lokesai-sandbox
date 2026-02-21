@@ -45,7 +45,7 @@ const NODE_TYPES = {
     text: {
         label: 'Text',
         icon: 'ic-text',
-        color: '#36da45',
+        color: '#228a24',
         headerBg: 'linear-gradient(135deg, rgba(163,230,53,0.15), rgba(163,230,53,0.05))',
         inputs: [],
         outputs: [{ id: 'text', type: 'text', label: 'Text' }],
@@ -68,7 +68,7 @@ const NODE_TYPES = {
     imageGen: {
         label: 'Image Generator',
         icon: 'ic-image',
-        color: '#3bcc3e',
+        color: '#1a6b1c',
         headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.15), rgba(43,147,46,0.05))',
         inputs: [
             { id: 'text', type: 'text', label: 'Prompt' },
@@ -131,7 +131,7 @@ const NODE_TYPES = {
     brain: {
         label: 'Brain Editor',
         icon: 'ic-brain',
-        color: '#3bcc3e',
+        color: '#1a6b1c',
         headerBg: 'linear-gradient(135deg, rgba(43,147,46,0.25), rgba(6,95,70,0.1))',
         inputs: [
             { id: 'video', type: 'video', label: 'Video Input' },
@@ -509,7 +509,7 @@ function updatePropsPanel() {
             const dur = Math.max(minDur, Math.min(maxDur, node.config.duration || (isOmni ? 5 : 10)));
             html += `<div class="prop-group"><label class="prop-label">Duration</label><div class="prop-range-row"><input type="range" min="${minDur}" max="${maxDur}" value="${dur}" data-field="duration"><span class="range-val">${dur}s</span></div></div>`;
             if (isOmni) {
-                html += `<div class="prop-group" style="padding:8px 10px;background:rgba(54,218,69,0.08);border-radius:6px;border:1px solid rgba(54,218,69,0.15);margin-top:4px"><span style="font-size:11px;color:#36da45;line-height:1.4">Connect <b>Character Ref</b> and <b>Frontal Ref</b> ports for character consistency. Use <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px">@Element1</code> in your prompt to reference the character.</span></div>`;
+                html += `<div class="prop-group" style="padding:8px 10px;background:rgba(54,218,69,0.08);border-radius:6px;border:1px solid rgba(54,218,69,0.15);margin-top:4px"><span style="font-size:11px;color:#228a24;line-height:1.4">Connect <b>Character Ref</b> and <b>Frontal Ref</b> ports for character consistency. Use <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px">@Element1</code> in your prompt to reference the character.</span></div>`;
             }
             break;
         }

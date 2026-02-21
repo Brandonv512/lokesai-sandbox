@@ -267,22 +267,23 @@ function initCinematicBackground() {
     const MOUSE_RADIUS = 250;   // Large mouse interaction zone
 
     particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-        const isCyan = i % 5 === 0; // 20% bright green (reduced from 25%)
-        const isIce = i % 10 === 0; // 10% ice blue particles
-        const isYellow = i % 7 === 0 && !isCyan && !isIce; // ~12% warm yellow
-        const isSilver = i % 8 === 0 && !isCyan && !isIce && !isYellow; // ~10% silver
+        const isCyan = i % 10 === 0; // 10% bright green (the vivid ones)
+        const isIce = i % 12 === 0 && !isCyan; // ~8% ice blue
+        const isGreenSilver = i % 7 === 0 && !isCyan && !isIce; // ~12% greenish-silver
+        const isSilver = i % 9 === 0 && !isCyan && !isIce && !isGreenSilver; // ~8% silver
+        // remaining ~62% = dark translucent green
         return {
             x: Math.random() * 2000,
             y: Math.random() * 2000,
             z: Math.random() * 3,
-            baseSize: (isCyan || isYellow) ? (1.5 + Math.random() * 2.5) : (1 + Math.random() * 2.2),
+            baseSize: isCyan ? (1.8 + Math.random() * 2.5) : (1 + Math.random() * 2.2),
             speed: 0.08 + Math.random() * 0.2,
-            baseOpacity: (isCyan || isYellow) ? (0.6 + Math.random() * 0.4) : (0.4 + Math.random() * 0.4),
+            baseOpacity: isCyan ? (0.7 + Math.random() * 0.3) : (0.3 + Math.random() * 0.4),
             angle: Math.random() * Math.PI * 2,
             angleSpeed: (Math.random() - 0.5) * 0.002,
             isCyan,
             isIce,
-            isYellow,
+            isGreenSilver,
             isSilver,
             pulsePhase: Math.random() * Math.PI * 2,
             pulseSpeed: 0.5 + Math.random() * 1.5,
@@ -291,11 +292,11 @@ function initCinematicBackground() {
 
     // Cinematic orbs (ambient glow blobs) — VISIBLE
     const orbColors = [
-        'rgba(65, 220, 69, 0.05)',      // green orb (reduced)
-        'rgba(232, 212, 77, 0.05)',     // warm yellow orb
-        'rgba(20, 60, 100, 0.06)',      // ice blue orb
-        'rgba(210, 210, 230, 0.06)',    // silver orb (boosted)
-        'rgba(210, 210, 230, 0.04)',    // silver orb 2
+        'rgba(26, 107, 28, 0.04)',      // dark translucent green orb
+        'rgba(184, 208, 188, 0.04)',    // greenish-silver orb
+        'rgba(210, 210, 230, 0.06)',    // silver orb
+        'rgba(210, 210, 230, 0.05)',    // silver orb 2
+        'rgba(26, 107, 28, 0.03)',      // dark green orb 2
     ];
 
     orbs = Array.from({ length: 5 }, (_, i) => ({
@@ -360,19 +361,19 @@ function initCinematicBackground() {
             const opacityMod = p.baseOpacity * (0.3 + p.z * 0.3) * (0.8 + pulse * 0.2);
 
             // Draw glow halo for brighter particles
-            if (p.z > 1 || p.isCyan || p.isIce || p.isYellow || p.isSilver) {
+            if (p.z > 1 || p.isCyan || p.isIce || p.isGreenSilver || p.isSilver) {
                 const glowSize = sz * 5;
                 const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
-                if (p.isIce) {
-                    grad.addColorStop(0, `rgba(74, 138, 181, ${opacityMod * 0.45})`);
-                } else if (p.isYellow) {
-                    grad.addColorStop(0, `rgba(232, 212, 77, ${opacityMod * 0.45})`);
+                if (p.isCyan) {
+                    grad.addColorStop(0, `rgba(45, 183, 48, ${opacityMod * 0.55})`); // BRIGHT green (10%)
+                } else if (p.isIce) {
+                    grad.addColorStop(0, `rgba(74, 138, 181, ${opacityMod * 0.40})`);
+                } else if (p.isGreenSilver) {
+                    grad.addColorStop(0, `rgba(184, 208, 188, ${opacityMod * 0.35})`);
                 } else if (p.isSilver) {
-                    grad.addColorStop(0, `rgba(210, 210, 230, ${opacityMod * 0.40})`);
-                } else if (p.isCyan) {
-                    grad.addColorStop(0, `rgba(65, 220, 69, ${opacityMod * 0.40})`);
+                    grad.addColorStop(0, `rgba(210, 210, 230, ${opacityMod * 0.35})`);
                 } else {
-                    grad.addColorStop(0, `rgba(65, 220, 69, ${opacityMod * 0.30})`);
+                    grad.addColorStop(0, `rgba(26, 107, 28, ${opacityMod * 0.25})`); // dark translucent
                 }
                 grad.addColorStop(1, 'transparent');
                 ctx.fillStyle = grad;
@@ -382,16 +383,16 @@ function initCinematicBackground() {
             // Draw dot
             ctx.beginPath();
             ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
-            if (p.isIce) {
+            if (p.isCyan) {
+                ctx.fillStyle = `rgba(45, 183, 48, ${opacityMod})`; // BRIGHT green (10%)
+            } else if (p.isIce) {
                 ctx.fillStyle = `rgba(74, 138, 181, ${opacityMod})`;
-            } else if (p.isYellow) {
-                ctx.fillStyle = `rgba(232, 212, 77, ${opacityMod})`;
+            } else if (p.isGreenSilver) {
+                ctx.fillStyle = `rgba(184, 208, 188, ${opacityMod * 0.8})`;
             } else if (p.isSilver) {
-                ctx.fillStyle = `rgba(210, 210, 230, ${opacityMod})`;
-            } else if (p.isCyan) {
-                ctx.fillStyle = `rgba(65, 220, 69, ${opacityMod})`;
+                ctx.fillStyle = `rgba(210, 210, 230, ${opacityMod * 0.8})`;
             } else {
-                ctx.fillStyle = `rgba(65, 220, 69, ${opacityMod * 0.75})`;
+                ctx.fillStyle = `rgba(26, 107, 28, ${opacityMod * 0.6})`; // dark translucent
             }
             ctx.fill();
         });
@@ -416,17 +417,17 @@ function initCinematicBackground() {
                     ctx.moveTo(particles[i].x, particles[i].y);
                     ctx.lineTo(particles[j].x, particles[j].y);
 
-                    // Color tint based on particle types
-                    if (particles[i].isIce || particles[j].isIce) {
+                    // Color tint — 10% bright green, 90% dark translucent
+                    if (particles[i].isCyan || particles[j].isCyan) {
+                        ctx.strokeStyle = `rgba(45, 183, 48, ${alpha * mouseBoost})`; // bright green
+                    } else if (particles[i].isIce || particles[j].isIce) {
                         ctx.strokeStyle = `rgba(74, 138, 181, ${alpha * mouseBoost})`;
-                    } else if (particles[i].isYellow || particles[j].isYellow) {
-                        ctx.strokeStyle = `rgba(232, 212, 77, ${alpha * mouseBoost * 0.7})`;
+                    } else if (particles[i].isGreenSilver || particles[j].isGreenSilver) {
+                        ctx.strokeStyle = `rgba(184, 208, 188, ${alpha * mouseBoost * 0.6})`;
                     } else if (particles[i].isSilver || particles[j].isSilver) {
-                        ctx.strokeStyle = `rgba(210, 210, 230, ${alpha * mouseBoost * 0.8})`;
-                    } else if (particles[i].isCyan || particles[j].isCyan) {
-                        ctx.strokeStyle = `rgba(65, 220, 69, ${alpha * mouseBoost})`;
-                    } else {
                         ctx.strokeStyle = `rgba(210, 210, 230, ${alpha * mouseBoost * 0.6})`;
+                    } else {
+                        ctx.strokeStyle = `rgba(26, 107, 28, ${alpha * mouseBoost * 0.5})`; // dark translucent
                     }
                     ctx.stroke();
                 }
@@ -444,7 +445,7 @@ function initCinematicBackground() {
                     ctx.beginPath();
                     ctx.moveTo(mouseX, mouseY);
                     ctx.lineTo(p.x, p.y);
-                    ctx.strokeStyle = p.isYellow ? `rgba(232, 212, 77, ${alpha})` : p.isSilver ? `rgba(210, 210, 230, ${alpha})` : `rgba(210, 210, 230, ${alpha * 0.8})`;
+                    ctx.strokeStyle = p.isCyan ? `rgba(45, 183, 48, ${alpha})` : p.isSilver ? `rgba(210, 210, 230, ${alpha * 0.7})` : `rgba(26, 107, 28, ${alpha * 0.5})`;
                     ctx.lineWidth = 0.6;
                     ctx.stroke();
                 }
