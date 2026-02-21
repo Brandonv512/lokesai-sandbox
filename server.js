@@ -64,6 +64,8 @@ function getUserIdFromReq(req) {
 
 // Middleware-style: returns userId or sends 401
 function requireAuth(req, res) {
+    // Bypass auth for sandbox testing
+    if (process.env.BYPASS_AUTH === 'true') return _bypassUserId || 1;
     const userId = getUserIdFromReq(req);
     if (!userId) {
         jsonResponse(res, 401, { error: 'Authentication required' });
@@ -71,6 +73,7 @@ function requireAuth(req, res) {
     }
     return userId;
 }
+let _bypassUserId = null;
 
 // ==================== AUTH HANDLERS ====================
 async function handleSignup(req, res) {
@@ -3686,7 +3689,21 @@ const server = http.createServer(async (req, res) => {
 
     // === Static files (login page, assets, etc.) ===
     if (urlPath === '/login' || urlPath === '/login.html') {
+        if (process.env.BYPASS_AUTH === 'true') {
+            // Auto-login: redirect to dashboard with bypass token
+            res.writeHead(302, { Location: '/' }); res.end(); return;
+        }
         serveStaticFile(path.join(__dirname, 'login.html'), res); return;
+    }
+    if (urlPath === '/auth/bypass' && process.env.BYPASS_AUTH === 'true') {
+        const user = await db.getUserByEmail('test@lokesai.dev');
+        if (user) {
+            const token = generateToken(user);
+            jsonResponse(res, 200, { token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, runs_used: user.runs_used, runs_limit: user.runs_limit } });
+        } else {
+            jsonResponse(res, 500, { error: 'Bypass user not found' });
+        }
+        return;
     }
     // Assets API (must come before static /assets/ handler)
     if (urlPath === '/assets/log' && req.method === 'GET') {
@@ -4163,6 +4180,24 @@ function scheduleMonthlyReset() {
         console.error('   Make sure PostgreSQL is running and database "loki_saas" exists.');
         console.error('   Create it with: createdb loki_saas');
         process.exit(1);
+    }
+
+    // Bypass auth: create test user on startup
+    if (process.env.BYPASS_AUTH === 'true') {
+        try {
+            let user = await db.getUserByEmail('test@lokesai.dev');
+            if (!user) {
+                const bcrypt = require('bcryptjs');
+                const hash = await bcrypt.hash('test123', 12);
+                user = await db.createUser('test@lokesai.dev', hash, 'Test User');
+                console.log(`🧪 Bypass auth: created test user (ID: ${user.id})`);
+            }
+            _bypassUserId = user.id;
+            console.log(`🧪 Auth bypass ON — all requests use user ID ${_bypassUserId}`);
+        } catch (err) {
+            console.error('Bypass user setup error:', err.message);
+            _bypassUserId = 1;
+        }
     }
 
     // Initialize pipeline queue
