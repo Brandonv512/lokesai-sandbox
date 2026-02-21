@@ -3941,6 +3941,14 @@ function showOnboarding() {
     }
 }
 
+async function skipOnboarding() {
+    try {
+        await fetch('/api/onboarding/skip', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' } });
+    } catch (e) { /* ignore */ }
+    hideOnboarding();
+    initFullDashboard();
+}
+
 function hideOnboarding() {
     const overlay = document.getElementById('onboardingOverlay');
     if (overlay) overlay.style.display = 'none';

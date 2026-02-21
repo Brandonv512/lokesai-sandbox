@@ -4018,6 +4018,11 @@ const server = http.createServer(async (req, res) => {
     if (urlPath === '/api/onboarding/complete' && req.method === 'POST') {
         await handleOnboardingComplete(req, res); return;
     }
+    if (urlPath === '/api/onboarding/skip' && req.method === 'POST') {
+        const userId = requireAuth(req, res); if (!userId) return;
+        await db.markOnboardingComplete(userId);
+        jsonResponse(res, 200, { ok: true }); return;
+    }
     if (urlPath === '/api/onboarding/generate-more' && req.method === 'POST') {
         await handleOnboardingGenerateMore(req, res); return;
     }
