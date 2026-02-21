@@ -89,10 +89,10 @@
     --border-bright: rgba(210, 210, 230, 0.18);
     --border-cyan: rgba(210, 210, 230, 0.14);
 
-    /* Text */
+    /* Text — white for readability */
     --text-primary: #ffffff;
-    --text-secondary: rgba(210, 210, 230, 0.70);
-    --text-tertiary: rgba(210, 210, 230, 0.42);
+    --text-secondary: rgba(255, 255, 255, 0.78);
+    --text-tertiary: rgba(255, 255, 255, 0.50);
     --text-on-accent: #000;
 
     /* Opal green accent (98% — muted pearlescent sage) */

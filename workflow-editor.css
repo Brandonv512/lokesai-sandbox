@@ -19,9 +19,9 @@
     --border: rgba(210, 210, 230, 0.10);
     --border-light: rgba(210, 210, 230, 0.12);
     --border-bright: rgba(210, 210, 230, 0.18);
-    --text: #d0d0d8;
-    --text-dim: #707078;
-    --text-bright: #f0f0f4;
+    --text: #f0f0f4;
+    --text-dim: #a0a0a8;
+    --text-bright: #ffffff;
     --accent: #4a6a4e;
     --accent-hover: #6a8a6e;
     --accent-bright: #2db730;
